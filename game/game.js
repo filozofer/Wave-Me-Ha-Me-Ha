@@ -6,8 +6,8 @@
 var debug = {
     enable: true,
     contexts: {
-        'rune': true,
-        'spell': true,
+        'rune': false,
+        'spell': false,
         'spellBook': true,
         'life': true
     }
@@ -37,8 +37,8 @@ var waves = {
     'defenseWavesPlayer2':  undefined
 };
 var players = {
-    'player1': { 'name': 'player1', 'difficulty': 'medium', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player2' },
-    'player2': { 'name': 'player2', 'difficulty': 'medium', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player1' }
+    'player1': { 'name': 'player1', 'difficulty': 'easy', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player2' },
+    'player2': { 'name': 'player2', 'difficulty': 'easy', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player1' }
 };
 var playersHitbox;
 var wavemehamehaLeftPlayer;
@@ -122,10 +122,10 @@ var downLineImpact;
                 return { x: x, y: this.y + this.height / 2 }
             };
         }
-        upLineImpact = game.add.sprite(widthPercent(50) + 25, heightPercent(15) - 5, 'lineImpact');
+        upLineImpact = game.add.sprite(widthPercent(50) + 25, heightPercent(15)+ 5, 'lineImpact');
         upLineImpact.scale.setTo(0.5,0.4);
         upLineImpact.scale.x *= -1;
-        downLineImpact = game.add.sprite(widthPercent(50) - 35, heightPercent(35) - 5, 'lineImpact');
+        downLineImpact = game.add.sprite(widthPercent(50) - 35, heightPercent(35) + 5, 'lineImpact');
         downLineImpact.scale.setTo(0.5,0.4);
 
         // Players hitbox init
@@ -166,7 +166,7 @@ var downLineImpact;
         setInterval(function(){ verifyIfGamepadAreConnected(); }, 200);
 
         // Print spell book in console (thanx me for that !)
-        console.gameLog(JSON.stringify(spells.medium), 'spellBook');
+        console.gameLog(JSON.stringify(spells.easy), 'spellBook');
 
     }
 
@@ -317,6 +317,7 @@ var downLineImpact;
             wave.spell = spell;
             wave.shooter = pad.name;
             wave.spellType = spellType;
+            wave.scale.setTo(0.25 * line.direction, 0.25);
             wave.body.velocity.setTo(line.direction * (config.waveSpeed * gameSpeed), 0);
 
         }
