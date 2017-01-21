@@ -22,6 +22,8 @@
     var player2Hitbox;
     var wavemehamehaLeftPlayer;
     var wavemehamehaRightPlayer;
+    var padPlayer1;
+    var padPlayer2;
 
     /**
      * Preload all assets
@@ -62,14 +64,26 @@
 
         // Attack & Defense lines between players init
         attackLineLeftPlayer = game.add.tileSprite(0, heightPercent(15), widthPercent(50), 20, 'attackLine');
-        defenseLineLeftPlayer = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 20, 'defenseLine');
+        defenseLineLeftPlayer = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 100, 'defenseLine');
         attackLineRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(35), widthPercent(50), 20, 'attackLine');
-        defenseLineRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 20, 'defenseLine');
-
+        defenseLineRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 100, 'defenseLine');
+        defenseLineLeftPlayer.tileScale.y = 0.5;
+        defenseLineRightPlayer.tileScale.y = 0.5;
+        defenseLineLeftPlayer.tileScale.x = 0.2;
+        defenseLineRightPlayer.tileScale.x = 0.2;
 
         // Declare inputs listener
-        // TODO
+        game.input.gamepad.start();
+        padPlayer1 = game.input.gamepad.pad1;
+        padPlayer2 = game.input.gamepad.pad2;
         //game.input.onDown.add(releaseBall, this);
+
+        if(!game.input.gamepad.supported || !game.input.gamepad.active || !padPlayer1.connected) {
+            console.log('Merci de brancher une première manette !');
+        }
+        if(!game.input.gamepad.supported || !game.input.gamepad.active || !padPlayer2.connected) {
+            console.log('Merci de brancher une seconde manette !');
+        }
 
     }
 
@@ -77,6 +91,68 @@
      * Update loop to handle movements & collisions
      */
     function update () {
+
+
+
+        /*
+
+        // Handle players inputs
+        // Pad "connected or not" indicator
+        if (game.input.gamepad.supported && game.input.gamepad.active && padPlayer1.connected)
+        {
+            indicator.animations.frame = 0;
+        }
+        else
+        {
+            indicator.animations.frame = 1;
+        }
+
+        // Controls
+        if (pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_LEFT) || pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1)
+        {
+            sprite.x--;
+        }
+        else if (pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_RIGHT) || pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1)
+        {
+            sprite.x++;
+        }
+
+        if (pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_UP) || pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1)
+        {
+            sprite.y--;
+        }
+        else if (pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_DOWN) || pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1)
+        {
+            sprite.y++;
+        }
+
+        if (pad1.justPressed(Phaser.Gamepad.XBOX360_A))
+        {
+            sprite.angle += 5;
+        }
+
+        if (pad1.justReleased(Phaser.Gamepad.XBOX360_B))
+        {
+            sprite.scale.x += 0.01;
+            sprite.scale.y = sprite.scale.x;
+        }
+
+        if (pad1.connected)
+        {
+            var rightStickX = pad1.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_X);
+            var rightStickY = pad1.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_Y);
+
+            if (rightStickX)
+            {
+                sprite.x += rightStickX * 10;
+            }
+
+            if (rightStickY)
+            {
+                sprite.y += rightStickY * 10;
+            }
+        }
+        */
 
         // Verify colission between waves
         // TODO
