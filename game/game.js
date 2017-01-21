@@ -228,6 +228,21 @@ var wavemehamehaRightPlayer;
         if(!game.paused) {
             game.paused = true;
             $('#pause_screen').fadeIn();
+
+            // Start to listen for unpause using browser api (not phaser) because the game is paused
+            // and do not catch for keydown anymore
+            setTimeout(function(){
+                stopPauseScreen = setInterval(function(){
+                    for(var i = 0; i <= 1; i++) {
+                        // If one of the gamepad press start we unpaused the game
+                        if(navigator.getGamepads()[i].buttons[9].pressed) {
+                            clearInterval(stopPauseScreen);
+                            changePauseGameState();
+                        }
+                    }
+                }, 10);
+            }, 1000);
+
         }
         // Resume the game
         else {
@@ -236,6 +251,7 @@ var wavemehamehaRightPlayer;
             });
         }
     }
+    var stopPauseScreen = undefined;
 
     /**
      * Handle sticks usage for players
