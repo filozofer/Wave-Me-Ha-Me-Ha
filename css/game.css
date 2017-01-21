@@ -93,8 +93,8 @@ header {
 #game {
     position: fixed;
     top: 10%;
-    left: 5%;
-    width: 90%;
+    left: 15%;
+    width: 70%;
     height: 65%;
     z-index: -1;
     background-color: rgba(0,0,0,0.5);
