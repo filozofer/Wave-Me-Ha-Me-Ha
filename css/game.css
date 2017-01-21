@@ -23,7 +23,7 @@ header {
 .character {
     position: fixed;
     top: 10%;
-    width: 400px;
+    width: 15%;
     height: 65%;
     z-index: 5;
 }
@@ -70,16 +70,33 @@ header {
 }
 
 .fullscreen h1 {
-    position: absolute;
-    top: 45%;
     width: 100%;
     margin: auto;
+    margin-top: 300px;
     color: white;
     text-align: center;
 }
 
 #pregame_screen {
     display: none;
+}
+
+#pregame_screen .error {
+    display: none;
+    width: 100%;
+    margin: auto;
+    color: white;
+    text-align: center;
+}
+
+#pregame_screen.notSupportedGamePad .notSupportedGamePad {
+    display: block;
+}
+#pregame_screen.missingPadPlayer1 .missingPadPlayer1 {
+    display: block;
+}
+#pregame_screen.missingPadPlayer2 .missingPadPlayer2 {
+    display: block;
 }
 
 #pause_screen {
@@ -89,12 +106,25 @@ header {
 #win_screen {
     display: none;
 }
+#win_screen .win_message {
+    display: none;
+    width: 100%;
+    margin: auto;
+    color: white;
+    text-align: center;
+}
+#win_screen.player1Win .player1Win {
+    display: block;
+}
+#win_screen.player2Win .player2Win {
+    display: block;
+}
 
 #game {
     position: fixed;
     top: 10%;
-    left: 15%;
-    width: 70%;
+    left: 10%;
+    width: 80%;
     height: 65%;
     z-index: -1;
     background-color: rgba(0,0,0,0.5);
