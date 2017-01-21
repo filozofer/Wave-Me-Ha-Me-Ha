@@ -8,31 +8,47 @@ var debug = {
     contexts: {
         'rune': true,
         'spell': true,
+        'spellBook': true,
         'life': true
     }
 };
 
 // Configurable variable
 var config = {
-  'wrongSpellLifeCost': 5
+    'wrongSpellLifeCost': 5,
+    'waveSpeed' : 100
+};
+
+// Spell Combos !
+var spells = {
+    'easy'   : { 'water': 'L'    , 'grass': 'D'    , 'fire': 'R' },
+    'medium' : { 'water': 'L-U'  , 'grass': 'D-L'  , 'fire': 'R-D' },
+    'hard'   : { 'water': 'L-R-U', 'grass': 'D-L-U', 'fire': 'R-U-D' }
 };
 
 // Init all game global vars
 var game;
 var waves = {
-    'aggresiveWavesLeftPlayer': undefined,
-    'defensiveWavesLeftPlayer': undefined,
-    'aggresiveWavesRightPlayer': undefined,
-    'defensiveWavesRightPlayer': undefined
+    'attackWavesPlayer1'  : undefined,
+    'defenseWavesPlayer1' : undefined,
+    'attackWavesPlayer2'  : undefined,
+    'defenseWavesPlayer2':  undefined
 };
 var players = {
-    'player1': { 'name': 'player1', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player2' },
-    'player2': { 'name': 'player2', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player1' }
+    'player1': { 'name': 'player1', 'difficulty': 'medium', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player2' },
+    'player2': { 'name': 'player2', 'difficulty': 'medium', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player1' }
 };
 var player1Hitbox;
 var player2Hitbox;
 var wavemehamehaLeftPlayer;
 var wavemehamehaRightPlayer;
+var gameSpeed = 1;
+var lines = {
+    'attackPlayer1'   : [],
+    'defensePlayer1'  : [],
+    'attackPlayer2'  : [],
+    'defensePlayer2' : []
+};
 
 (function($) {$(document).ready(function() {
 
@@ -56,6 +72,11 @@ var wavemehamehaRightPlayer;
         game.load.image('attackLine', 'assets/images/attackLine.png');
         game.load.image('defenseLine', 'assets/images/defenseLine.png');
 
+        // Load waves
+        game.load.image('waterWave', 'assets/images/waterWave.png');
+        game.load.image('fireWave', 'assets/images/fireWave.png');
+        game.load.image('grassWave', 'assets/images/grassWave.png');
+
     }
 
     /**
@@ -66,13 +87,6 @@ var wavemehamehaRightPlayer;
         // Start game physics mode
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        // Init waves groups properties
-        for(var k in waves) {
-            waves[k] =  game.add.group();
-            waves[k].enableBody = true;
-            waves[k].physicsBodyType = Phaser.Physics.ARCADE;
-        }
-
         // Players hitbox init
         // TODO
 
@@ -81,14 +95,31 @@ var wavemehamehaRightPlayer;
         wavemehamehaRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(60), widthPercent(50), 170, 'wavemehamehaBeamRightPlayer');
 
         // Attack & Defense lines between players init
-        attackLineLeftPlayer = game.add.tileSprite(0, heightPercent(15), widthPercent(50), 20, 'attackLine');
-        defenseLineLeftPlayer = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 100, 'defenseLine');
-        attackLineRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(35), widthPercent(50), 20, 'attackLine');
-        defenseLineRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 100, 'defenseLine');
-        defenseLineLeftPlayer.tileScale.y = 0.5;
-        defenseLineRightPlayer.tileScale.y = 0.5;
-        defenseLineLeftPlayer.tileScale.x = 0.2;
-        defenseLineRightPlayer.tileScale.x = 0.2;
+        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(15), widthPercent(50), 20, 'attackLine');
+        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 100, 'defenseLine');
+        lines['attackPlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(35), widthPercent(50), 20, 'attackLine');
+        lines['defensePlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 100, 'defenseLine');
+        lines['attackPlayer1'].direction = 1;
+        lines['defensePlayer1'].direction = 1;
+        lines['defensePlayer2'].direction = -1;
+        lines['defensePlayer2'].direction = -1;
+        for(var k in lines) {
+            lines[k].tileScale.y = 0.5;
+            lines[k].tileScale.x = 0.2;
+            lines[k].beginOfLine = function() {
+                return {
+                    x: this.x,
+                    y: this.y + this.height / 2
+                }
+            };
+        }
+
+        // Init waves groups properties
+        for(var k in waves) {
+            waves[k] =  game.add.group();
+            waves[k].enableBody = true;
+            waves[k].physicsBodyType = Phaser.Physics.ARCADE;
+        }
 
         // Declare pads inputs listener
         game.input.gamepad.start();
@@ -103,6 +134,10 @@ var wavemehamehaRightPlayer;
 
         // Verify if gamepad are connected until they are !
         setInterval(function(){ verifyIfGamepadAreConnected(); }, 200);
+
+        // Print spell book in console (thanx me for that !)
+        console.log(JSON.stringify(spells.medium), 'spellBook');
+
     }
 
     /**
@@ -228,22 +263,65 @@ var wavemehamehaRightPlayer;
      * Cast player spell !
      */
     function castSpell(pad, spellType) {
-        spellType = (spellType == 'attack') ? 'attackSpell' : 'defenseSpell';
+        spellTypeVar = (spellType == 'attack') ? 'attackSpell' : 'defenseSpell';
 
         // Log cast spell
-        console.gameLog(pad.name + ' cast spell: ' + players[pad.name][spellType].join('-'), 'spell');
+        console.gameLog(pad.name + ' try to cast spell: ' + players[pad.name][spellTypeVar].join('-'), 'spell');
 
-        // Verify if runes mactch a real spell
-        var matchRealSpell = false;
-        if(matchRealSpell) {
-            // TODO: Make the spell alive !
+        var spell = callBookSpell(players[pad.name][spellTypeVar], players[pad.name].difficulty);
+
+        // Verify if runes match a real spell
+        if(spell !== null) {
+
+            // Log
+            console.gameLog(pad.name + ' succeed to cast spell: ' + spell, 'spell', 'spell');
+
+            // Build name of the waves group
+            var waveName = spellType + 'Waves' + pad.name.capitalizeFirstLetter();
+
+            // Create the new wave
+            var line = lines[spellType + pad.name.capitalizeFirstLetter()];
+            var heightOfWave = 50; // TODO Dynamic ?
+            var wave = waves[waveName].create(line.beginOfLine().x, line.beginOfLine().y - (heightOfWave/2), spell + 'Wave');
+            wave.name = 'wave-' + spellType + '-' + pad.name + '-' + waves[waveName].length;
+            wave.body.velocity.setTo(line.direction * (config.waveSpeed * gameSpeed), 0);
+
         }
+        // If runes doas not match a spell, player must to be punish !
         else {
+
+            // Log
+            console.gameLog(pad.name + ' failed to cast spell. Punish him !: ', 'spell');
+
+            // Punish player !
             downgradePlayerLife(pad.name, config.wrongSpellLifeCost);
         }
 
         // Consume the runes of the spell
-        players[pad.name][spellType] = [];
+        players[pad.name][spellTypeVar] = [];
+    }
+
+
+    /**
+     * Allow to retrieve the spell name corresponding to a list of runes
+     * @param runes
+     * @return string|null The name of the spell or null if there is no corresponding spell
+     */
+    function callBookSpell(runes, difficulty) {
+
+        // Transform the runes into a real formula !
+        var playerFormula = runes.join('-');
+
+        // Try to find a corresponding spell into our spell book
+        for(var spellName in spells[difficulty]) {
+            var spellFormula = spells[difficulty][spellName];
+            if(playerFormula === spellFormula) {
+                return spellName;
+            }
+        }
+
+        // No formula found into our book !
+        return null;
     }
 
     /**
