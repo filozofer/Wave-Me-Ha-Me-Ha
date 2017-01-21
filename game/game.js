@@ -15,8 +15,10 @@ var debug = {
 
 // Configurable variable
 var config = {
-    'wrongSpellLifeCost': 5,
-    'waveSpeed' : 100
+    'wrongSpellLifeCost'         : 5,
+    'wrongCounterSpellLifeCost'  : 10,
+    'hitByOtherPlayerLifeCost'   : 30,
+    'waveSpeed'                  : 100
 };
 
 // Spell Combos !
@@ -38,12 +40,11 @@ var players = {
     'player1': { 'name': 'player1', 'difficulty': 'medium', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player2' },
     'player2': { 'name': 'player2', 'difficulty': 'medium', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player1' }
 };
-var player1Hitbox;
-var player2Hitbox;
+var playersHitbox;
 var wavemehamehaLeftPlayer;
 var wavemehamehaRightPlayer;
 var wavemehamehaImpact;
-var gameSpeed = 1;
+var gameSpeed = 5;
 var lines = {
     'attackPlayer1'   : [],
     'defensePlayer1'  : [],
@@ -82,6 +83,10 @@ var downLineImpact;
         game.load.image('fireWave', 'assets/images/fireWave.png');
         game.load.image('grassWave', 'assets/images/grassWave.png');
 
+        // Load player hitbox
+        game.load.image('player1Hitbox', 'assets/images/player1Hitbox.png');
+        game.load.image('player2Hitbox', 'assets/images/player2Hitbox.png');
+
     }
 
     /**
@@ -92,27 +97,26 @@ var downLineImpact;
         // Start game physics mode
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        // Players hitbox init
-        // TODO
-
         // Waveméhaméha init !
-        wavemehamehaLeftPlayer = game.add.tileSprite(0, heightPercent(60), widthPercent(50), 170, 'wavemehamehaBeamLeftPlayer');
-        wavemehamehaRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(60), widthPercent(50), 170, 'wavemehamehaBeamRightPlayer');
-        wavemehamehaImpact = game.add.sprite(widthPercent(50) - 105, heightPercent(60) - 80, 'wavemehamehaBeamImpact');
-        wavemehamehaImpact.scale.setTo(0.6, 1.2);
+        wavemehamehaLeftPlayer = game.add.tileSprite(0, heightPercent(60), widthPercent(50), 120, 'wavemehamehaBeamLeftPlayer');
+        wavemehamehaRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(60), widthPercent(50), 120, 'wavemehamehaBeamRightPlayer');
+        wavemehamehaLeftPlayer.scale.setTo(1, 0.8);
+        wavemehamehaRightPlayer.scale.setTo(1, 0.8);
+        wavemehamehaImpact = game.add.sprite(widthPercent(50) - 140, heightPercent(60) - 60, 'wavemehamehaBeamImpact');
+        wavemehamehaImpact.scale.setTo(0.8, 0.8);
 
         // Attack & Defense lines between players init
-        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(15), widthPercent(50), 50, 'attackLine');
-        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 50, 'defenseLine');
-        lines['attackPlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(35), widthPercent(50), 50, 'attackLine');
-        lines['defensePlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 50, 'defenseLine');
+        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(15), widthPercent(50), 80, 'attackLine');
+        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 80, 'defenseLine');
+        lines['attackPlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(35), widthPercent(50), 80, 'attackLine');
+        lines['defensePlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 80, 'defenseLine');
         lines['attackPlayer1'].direction = 1;
         lines['defensePlayer1'].direction = 1;
         lines['attackPlayer2'].direction = -1;
         lines['defensePlayer2'].direction = -1;
         for(var k in lines) {
-            lines[k].tileScale.y = 0.3;
-            lines[k].tileScale.x = 0.2;
+            lines[k].tileScale.y = 0.4;
+            lines[k].tileScale.x = 0.3;
             lines[k].beginOfLine = function() {
                 var x = (this.direction == 1) ? this.x : this.x + this.width;
                 return { x: x, y: this.y + this.height / 2 }
@@ -123,6 +127,21 @@ var downLineImpact;
         upLineImpact.scale.x *= -1;
         downLineImpact = game.add.sprite(widthPercent(50) - 35, heightPercent(35) - 5, 'lineImpact');
         downLineImpact.scale.setTo(0.5,0.4);
+
+        // Players hitbox init
+        playersHitbox = game.add.group();
+        playersHitbox.enableBody = true;
+        playersHitbox.physicsBodyType = Phaser.Physics.ARCADE;
+        var player1HitBox = playersHitbox.create(0, 0, 'player1Hitbox');
+        player1HitBox.body.setSize(10, heightPercent(100), 0, 0);
+        player1HitBox.body.immovable = true;
+        player1HitBox.visible = false;
+        player1HitBox.name = 'player1';
+        var player2HitBox = playersHitbox.create(0, 0, 'player2Hitbox');
+        player2HitBox.body.setSize(10, heightPercent(100), widthPercent(100) - 10, 0);
+        player2HitBox.body.immovable = true;
+        player2HitBox.visible = false;
+        player2HitBox.name = 'player2';
 
         // Init waves groups properties
         for(var k in waves) {
@@ -347,6 +366,12 @@ var downLineImpact;
         player.life -= lifeToLose;
         enemy.life += lifeToLose;
 
+        // Max bound for life
+        player.life = (player.life < 0) ? 0 : player.life;
+        player.life = (player.life > 100) ? 100 : player.life;
+        enemy.life = (enemy.life < 0) ? 0 : enemy.life;
+        enemy.life = (enemy.life > 100) ? 100 : enemy.life;
+
         // Log life score update
         console.gameLog('Players life updated:', 'life');
         console.gameLog(Array(parseInt(players['player1'].life / 5) + 1).join('=') + '> | <' + Array(parseInt(players['player2'].life / 5) + 1).join('='), 'life');
@@ -403,12 +428,33 @@ var downLineImpact;
      */
     function update () {
 
-        // Verify colission between waves
-        // TODO
-        //game.physics.arcade.collide(ball, paddle, ballHitPaddle, null, this);
-        //game.physics.arcade.collide(ball, bricks, ballHitBrick, null, this);
+        // Verify colission between waves and player hitbox
+        for(var k in waves) {
+            game.physics.arcade.overlap(waves[k], playersHitbox, waveHitPlayer, null, this);
+        }
 
-        // Verify colission between waves and players hitbox
+        // Verify colission between waves and waves !
+
+    }
+
+    /**
+     * What we do when a wave hit a player hit box
+     * @param wave
+     * @param playerHitBox
+     */
+    function waveHitPlayer(wave, playerHitBox) {
+
+        // No friendly fire ! Return now if detect friendly fire
+        var shooterName = wave.name.split('-')[2];
+        if(shooterName === playerHitBox.name) {
+            return;
+        }
+
+        // Kill wave
+        wave.kill();
+
+        // Damage the player which has been hit !
+        downgradePlayerLife(playerHitBox.name, config.hitByOtherPlayerLifeCost)
 
     }
 
@@ -450,31 +496,31 @@ var downLineImpact;
 
         // TODO
         /*
-        _brick.kill();
+         _brick.kill();
 
-        score += 10;
+         score += 10;
 
-        scoreText.text = 'score: ' + score;
+         scoreText.text = 'score: ' + score;
 
-        //  Are they any bricks left?
-        if (bricks.countLiving() == 0)
-        {
-            //  New level starts
-            score += 1000;
-            scoreText.text = 'score: ' + score;
-            introText.text = '- Next Level -';
+         //  Are they any bricks left?
+         if (bricks.countLiving() == 0)
+         {
+         //  New level starts
+         score += 1000;
+         scoreText.text = 'score: ' + score;
+         introText.text = '- Next Level -';
 
-            //  Let's move the ball back to the paddle
-            ballOnPaddle = true;
-            ball.body.velocity.set(0);
-            ball.x = paddle.x + 16;
-            ball.y = paddle.y - 16;
-            ball.animations.stop();
+         //  Let's move the ball back to the paddle
+         ballOnPaddle = true;
+         ball.body.velocity.set(0);
+         ball.x = paddle.x + 16;
+         ball.y = paddle.y - 16;
+         ball.animations.stop();
 
-            //  And bring the bricks back from the dead :)
-            bricks.callAll('revive');
-        }
-        */
+         //  And bring the bricks back from the dead :)
+         bricks.callAll('revive');
+         }
+         */
 
     }
 
