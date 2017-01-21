@@ -140,6 +140,63 @@ var wavemehamehaRightPlayer;
     }
 
     /**
+     * Handle sticks usage for players
+     * @param pad
+     * @param value
+     */
+    function onAxisCallback(pad, value) {
+
+        // Verify if left stick is triggering a rune
+        if(canUseAxisLeft && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) <= -0.8 && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) >= -1) {
+            addRuneInSpell(pad, 'defense', 'L');
+            canUseAxisLeft = false;
+        }
+        else if(canUseAxisLeft && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) >= 0.8 && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) <= 1) {
+            addRuneInSpell(pad, 'defense', 'R');
+            canUseAxisLeft = false;
+        }
+        if(canUseAxisLeft && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) <= -0.8 && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) >= -1) {
+            addRuneInSpell(pad, 'defense', 'U');
+            canUseAxisLeft = false;
+        }
+        else if(canUseAxisLeft && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) >= 0.8 && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) <= 1) {
+            addRuneInSpell(pad, 'defense', 'D');
+            canUseAxisLeft = false;
+        }
+
+        // Return on center before accepting another direction
+        if(pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) === false && pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) === false) {
+            canUseAxisLeft = true;
+        }
+
+        // Verify if right stick is triggering a rune
+        if(canUseAxisRight && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_X) <= -0.8 && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_X) >= -1) {
+            addRuneInSpell(pad, 'attack', 'L');
+            canUseAxisRight = false;
+        }
+        else if(canUseAxisRight && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_X) >= 0.8 && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_X) <= 1) {
+            addRuneInSpell(pad, 'attack', 'R');
+            canUseAxisRight = false;
+        }
+        if(canUseAxisRight && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_Y) <= -0.8 && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_Y) >= -1) {
+            addRuneInSpell(pad, 'attack', 'U');
+            canUseAxisRight = false;
+        }
+        else if(canUseAxisRight && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_Y) >= 0.8 && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_Y) <= 1) {
+            addRuneInSpell(pad, 'attack', 'D');
+            canUseAxisRight = false;
+        }
+
+        // Return on center before accepting another direction
+        if(pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_X) === false && pad.axis(Phaser.Gamepad.XBOX360_STICK_RIGHT_Y) === false) {
+            canUseAxisRight = true;
+        }
+
+    }
+    var canUseAxisLeft = true;
+    var canUseAxisRight = true;
+
+    /**
      * Add rune in one of the player spell (defense or attack)
      * @param pad SinglePad
      * @param spellType string attack|defense
@@ -252,16 +309,6 @@ var wavemehamehaRightPlayer;
         }
     }
     var stopPauseScreen = undefined;
-
-    /**
-     * Handle sticks usage for players
-     * @param pad
-     * @param value
-     */
-    function onAxisCallback(pad, value) {
-        // TODO
-        //console.log(this.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X)); return;
-    }
 
     /**
      * Update loop to handle movements & collisions
