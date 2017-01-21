@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <title>Wave-mé-ha-mé-ha</title>
+        <link rel="stylesheet" href="lib/slick.css" type="text/css" />
         <link rel="stylesheet" href="css/game.css" type="text/css" />
     </head>
     <body class="game_on">
@@ -36,10 +37,32 @@
 
         <!-- Pre-Game Screen -->
         <div id="pregame_screen" class="fullscreen">
-            <h1>TODO PRE-GAME SCREEN</h1>
-            <h2 class="error notSupportedGamePad">Il semble que votre navigateur ne permet pas de jouer à la mannete. Désolé !</h2>
-            <h2 class="error missingPadPlayer1">Merci de brancher une première manette puis de recharger le jeu !</h2>
-            <h2 class="error missingPadPlayer2">Merci de brancher une seconde manette puis de recharger le jeu !</h2>
+
+            <!-- Screen title -->
+            <h1>Prepare your brain !</h1>
+
+            <!-- Errors message -->
+            <h2 class="error notSupportedGamePad">Your browser does not support gamepad which is required to play this game. Sorry !</h2>
+            <h2 class="error missingPadPlayer1">Please, plug-in a first gamepad, then reload the game !</h2>
+            <h2 class="error missingPadPlayer2">Please, plug-in a second gamepad, then reload the game !</h2>
+
+            <!-- Command instructions -->
+            <div class="commands_instructions"></div>
+
+            <!-- Difficulty mode -->
+            <div class="difficulty_mode slider center">
+                <div class="difficulty" difficulty="easy">Easy</div>
+                <div class="difficulty" difficulty="medium">Medium</div>
+                <div class="difficulty" difficulty="hard">Hard</div>
+                <div class="difficulty" difficulty="crazy">Crazy</div>
+            </div>
+
+            <!-- Press A buttons -->
+            <div class="press_a_container">
+                <div class="press_a player1">Player 1 is ready</div>
+                <div class="press_a player2">Player 2 is ready</div>
+            </div>
+
         </div>
 
         <!-- Pause Screen -->
@@ -54,6 +77,7 @@
 
         <!-- Library -->
         <script src="lib/jquery-3.1.1.min.js"></script>
+        <script src="lib/slick.min.js"></script>
         <script src="lib/phaser-2.6.2.min.js"></script>
 
         <!-- Game -->

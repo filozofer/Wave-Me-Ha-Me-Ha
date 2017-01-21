@@ -6,8 +6,8 @@
 var debug = {
     enable: true,
     contexts: {
-        'rune': false,
-        'spell': false,
+        'rune': true,
+        'spell': true,
         'spellBook': true,
         'life': true
     }
@@ -18,14 +18,16 @@ var config = {
     'wrongSpellLifeCost'         : 5,
     'wrongCounterSpellLifeCost'  : 10,
     'hitByOtherPlayerLifeCost'   : 30,
-    'waveSpeed'                  : 100
+    'waveSpeed'                  : 100,
+    'wavemehamehaSpeed'          : 200
 };
 
 // Spell Combos !
 var spells = {
     'easy'   : { 'water': 'L'    , 'grass': 'D'    , 'fire': 'R' },
     'medium' : { 'water': 'L-U'  , 'grass': 'D-L'  , 'fire': 'R-D' },
-    'hard'   : { 'water': 'L-R-U', 'grass': 'D-L-U', 'fire': 'R-U-D' }
+    'hard'   : { 'water': 'L-R-U', 'grass': 'D-L-U', 'fire': 'R-U-D' },
+    'crazy'  : { 'water': 'L-R-U-R', 'grass': 'D-L-U-U', 'fire': 'R-U-D-R' }
 };
 
 // Init all game global vars
@@ -56,12 +58,80 @@ var downLineImpact;
 
 (function($) {$(document).ready(function() {
 
+    // Prepare select difficulty component
+    $('.difficulty_mode').slick({
+        centerMode: true,
+        centerPadding: '60px',
+        slidesToShow: 3,
+        arrows: false,
+        draggable: false,
+        swipe: false,
+        touchMove: false
+    });
+    $('.difficulty_mode').css({'visibility': 'visible'}).find('.slick-slide').show(2000);
+
     // Init Phaser game
-    game = new Phaser.Game($('#game').width(), $('#game').height(), Phaser.AUTO, 'game', {
-        preload: preload,
-        create: create,
-        update: update
-    }, true);
+    game = new Phaser.Game($('#game').width(), $('#game').height(), Phaser.AUTO, 'game', null, true);
+    game.state.add('pregame', { create: createPreGame });
+    game.state.add('game', { preload: preload, create: create, update: update });
+    game.state.start('pregame');
+
+    /**
+     * Handle inputs on pregame screen
+     */
+    function createPreGame() {
+
+        // Declare pads inputs listener
+        game.input.gamepad.start();
+        var playerId = 1;
+        for(var k in players) {
+            players[k].pad = game.input.gamepad['pad' + playerId];
+            players[k].pad.name = k;
+            // Declare pads inputs listener
+            players[k].pad.onDownCallback = function(buttonCode, value){
+                switch (buttonCode) {
+
+                    // Change difficulty for both players
+                    case Phaser.Gamepad.XBOX360_DPAD_RIGHT:
+                        $('.difficulty_mode').slick('slickNext');
+                        for(var k in players) {
+                            players[k].difficulty = $('.difficulty_mode .slick-current').attr('difficulty');
+                        }
+                        break;
+                    case Phaser.Gamepad.XBOX360_DPAD_LEFT:
+                        $('.difficulty_mode').slick('slickPrev');
+                        for(var k in players) {
+                            players[k].difficulty = $('.difficulty_mode .slick-current').attr('difficulty');
+                        }
+                        break;
+
+                    // Validate player is ready
+                    case Phaser.Gamepad.XBOX360_A:
+
+                        // Set player in ready state
+                        $('.press_a_container .press_a.' + this.name).toggleClass('ready');
+
+                        // If both player ready start the game !
+                        if($('.press_a_container .press_a.ready').length === 2) {
+                            setTimeout(function(){
+                                $('#pregame_screen').fadeOut(1000, function(){
+                                    game.state.start('game');
+                                });
+                            }, 500);
+                        }
+                        break;
+
+                    // Do nothing for other key
+                    default: break;
+                }
+            };
+            playerId +=1 ;
+        }
+
+        // Verify if gamepad are connected until they are !
+        setInterval(function(){ verifyIfGamepadAreConnected(); }, 200);
+
+    }
 
     /**
      * Preload all assets
@@ -90,7 +160,7 @@ var downLineImpact;
     }
 
     /**
-     * Create basic game
+     * Init game
      */
     function create() {
 
@@ -162,11 +232,8 @@ var downLineImpact;
             playerId +=1 ;
         }
 
-        // Verify if gamepad are connected until they are !
-        setInterval(function(){ verifyIfGamepadAreConnected(); }, 200);
-
         // Print spell book in console (thanx me for that !)
-        console.gameLog(JSON.stringify(spells.easy), 'spellBook');
+        console.gameLog(JSON.stringify(spells[players['player1'].difficulty]), 'spellBook');
 
     }
 
@@ -295,6 +362,11 @@ var downLineImpact;
     function castSpell(pad, spellType) {
         spellTypeVar = (spellType == 'attack') ? 'attackSpell' : 'defenseSpell';
 
+        // Only cast if there is at least one rune
+        if(players[pad.name][spellTypeVar].length == 0) {
+            return;
+        }
+
         // Log cast spell
         console.gameLog(pad.name + ' try to cast spell: ' + players[pad.name][spellTypeVar].join('-'), 'spell');
 
@@ -311,7 +383,7 @@ var downLineImpact;
 
             // Create the new wave
             var line = lines[spellType + pad.name.capitalizeFirstLetter()];
-            var heightOfWave = 50; // TODO Dynamic ?
+            var heightOfWave = 50;
             var wave = waves[waveName].create(line.beginOfLine().x, line.beginOfLine().y - (heightOfWave/2), spell + 'Wave');
             wave.name = 'wave-' + spellType + '-' + pad.name + '-' + waves[waveName].length;
             wave.spell = spell;
@@ -383,7 +455,12 @@ var downLineImpact;
         console.gameLog('Player 1 : ' + players['player1'].life + ' | Player 2 : ' + players['player2'].life, 'life');
 
         // Change beam display
-        // TODO
+        var leftPlayerLife = (player.name == 'player1') ? player.life : enemy.life;
+        var rightPlayerLife = (player.name == 'player2') ? player.life : enemy.life;
+        wavemehamehaLeftPlayer.targetWidth = widthPercent(leftPlayerLife);
+        wavemehamehaRightPlayer.targetWidth = widthPercent(rightPlayerLife);
+        wavemehamehaRightPlayer.targetX = wavemehamehaLeftPlayer.targetWidth;
+        wavemehamehaImpact.targetX = wavemehamehaLeftPlayer.targetWidth - 140;
 
         // Handle win/lose case !
         if(player.life <= 0) {
@@ -447,6 +524,15 @@ var downLineImpact;
             }
         }
 
+        // Update beam position if needed
+        if(wavemehamehaImpact.targetX != wavemehamehaImpact.x) {
+            var moveWavemehamehaLeft = game.add.tween(wavemehamehaLeftPlayer);
+            moveWavemehamehaLeft.to({ width: wavemehamehaLeftPlayer.targetWidth }, config.wavemehamehaSpeed, null, true);
+            var moveWavemehamehaRight = game.add.tween(wavemehamehaRightPlayer);
+            moveWavemehamehaRight.to({ width: wavemehamehaRightPlayer.targetWidth, x: wavemehamehaRightPlayer.targetX }, config.wavemehamehaSpeed, null, true);
+            var moveWavemehamehaImpact = game.add.tween(wavemehamehaImpact);
+            moveWavemehamehaImpact.to({ x: wavemehamehaImpact.targetX }, config.wavemehamehaSpeed, null, true);
+        }
     }
 
     /**
