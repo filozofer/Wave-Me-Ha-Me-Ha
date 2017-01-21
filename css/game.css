@@ -4,7 +4,8 @@
  */
 
 body.game_on {
-    background-color: beige;
+    background-image: url('../assets/images/background.jpg');
+    background-size: cover;
 }
 
 header {
@@ -29,11 +30,11 @@ header {
 }
 #character_1 {
      left: 0px;
-     background-color: green;
+     background-color: rgba(0,0,0,0.6);
 }
 #character_2 {
     right: 0px;
-    background-color: gray;
+    background-color: rgba(0,0,0,0.6);
 }
 
 #commands {

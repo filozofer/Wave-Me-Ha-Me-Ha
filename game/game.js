@@ -42,6 +42,7 @@ var player1Hitbox;
 var player2Hitbox;
 var wavemehamehaLeftPlayer;
 var wavemehamehaRightPlayer;
+var wavemehamehaImpact;
 var gameSpeed = 1;
 var lines = {
     'attackPlayer1'   : [],
@@ -49,6 +50,8 @@ var lines = {
     'attackPlayer2'  : [],
     'defensePlayer2' : []
 };
+var upLineImpact;
+var downLineImpact;
 
 (function($) {$(document).ready(function() {
 
@@ -67,10 +70,12 @@ var lines = {
         // Load waveméhaméha assets
         game.load.image('wavemehamehaBeamLeftPlayer', 'assets/images/wavemehamehaBeamLeftPlayer.png');
         game.load.image('wavemehamehaBeamRightPlayer', 'assets/images/wavemehamehaBeamRightPlayer.png');
+        game.load.image('wavemehamehaBeamImpact', 'assets/images/wavemehamehaBeamImpact.png');
 
         // Load attack and defense lines assets
         game.load.image('attackLine', 'assets/images/attackLine.png');
         game.load.image('defenseLine', 'assets/images/defenseLine.png');
+        game.load.image('lineImpact', 'assets/images/lineImpact.png');
 
         // Load waves
         game.load.image('waterWave', 'assets/images/waterWave.png');
@@ -93,26 +98,31 @@ var lines = {
         // Waveméhaméha init !
         wavemehamehaLeftPlayer = game.add.tileSprite(0, heightPercent(60), widthPercent(50), 170, 'wavemehamehaBeamLeftPlayer');
         wavemehamehaRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(60), widthPercent(50), 170, 'wavemehamehaBeamRightPlayer');
+        wavemehamehaImpact = game.add.sprite(widthPercent(50) - 105, heightPercent(60) - 80, 'wavemehamehaBeamImpact');
+        wavemehamehaImpact.scale.setTo(0.6, 1.2);
 
         // Attack & Defense lines between players init
-        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(15), widthPercent(50), 20, 'attackLine');
-        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 100, 'defenseLine');
-        lines['attackPlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(35), widthPercent(50), 20, 'attackLine');
-        lines['defensePlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 100, 'defenseLine');
+        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(15), widthPercent(50), 50, 'attackLine');
+        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 50, 'defenseLine');
+        lines['attackPlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(35), widthPercent(50), 50, 'attackLine');
+        lines['defensePlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 50, 'defenseLine');
         lines['attackPlayer1'].direction = 1;
         lines['defensePlayer1'].direction = 1;
-        lines['defensePlayer2'].direction = -1;
+        lines['attackPlayer2'].direction = -1;
         lines['defensePlayer2'].direction = -1;
         for(var k in lines) {
-            lines[k].tileScale.y = 0.5;
+            lines[k].tileScale.y = 0.3;
             lines[k].tileScale.x = 0.2;
             lines[k].beginOfLine = function() {
-                return {
-                    x: this.x,
-                    y: this.y + this.height / 2
-                }
+                var x = (this.direction == 1) ? this.x : this.x + this.width;
+                return { x: x, y: this.y + this.height / 2 }
             };
         }
+        upLineImpact = game.add.sprite(widthPercent(50) + 25, heightPercent(15) - 5, 'lineImpact');
+        upLineImpact.scale.setTo(0.5,0.4);
+        upLineImpact.scale.x *= -1;
+        downLineImpact = game.add.sprite(widthPercent(50) - 35, heightPercent(35) - 5, 'lineImpact');
+        downLineImpact.scale.setTo(0.5,0.4);
 
         // Init waves groups properties
         for(var k in waves) {
@@ -136,7 +146,7 @@ var lines = {
         setInterval(function(){ verifyIfGamepadAreConnected(); }, 200);
 
         // Print spell book in console (thanx me for that !)
-        console.log(JSON.stringify(spells.medium), 'spellBook');
+        console.gameLog(JSON.stringify(spells.medium), 'spellBook');
 
     }
 
@@ -283,7 +293,7 @@ var lines = {
             var line = lines[spellType + pad.name.capitalizeFirstLetter()];
             var heightOfWave = 50; // TODO Dynamic ?
             var wave = waves[waveName].create(line.beginOfLine().x, line.beginOfLine().y - (heightOfWave/2), spell + 'Wave');
-            wave.name = 'wave-' + spellType + '-' + pad.name + '-' + waves[waveName].length;
+            wave.name = 'wave-' + spellType + '-' + pad.name + '-' + waves[waveName].length;;
             wave.body.velocity.setTo(line.direction * (config.waveSpeed * gameSpeed), 0);
 
         }
