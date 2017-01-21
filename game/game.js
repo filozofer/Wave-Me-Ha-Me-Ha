@@ -44,7 +44,7 @@ var playersHitbox;
 var wavemehamehaLeftPlayer;
 var wavemehamehaRightPlayer;
 var wavemehamehaImpact;
-var gameSpeed = 5;
+var gameSpeed = 1;
 var lines = {
     'attackPlayer1'   : [],
     'defensePlayer1'  : [],
@@ -148,6 +148,7 @@ var downLineImpact;
             waves[k] =  game.add.group();
             waves[k].enableBody = true;
             waves[k].physicsBodyType = Phaser.Physics.ARCADE;
+            waves[k].name = k;
         }
 
         // Declare pads inputs listener
@@ -312,7 +313,10 @@ var downLineImpact;
             var line = lines[spellType + pad.name.capitalizeFirstLetter()];
             var heightOfWave = 50; // TODO Dynamic ?
             var wave = waves[waveName].create(line.beginOfLine().x, line.beginOfLine().y - (heightOfWave/2), spell + 'Wave');
-            wave.name = 'wave-' + spellType + '-' + pad.name + '-' + waves[waveName].length;;
+            wave.name = 'wave-' + spellType + '-' + pad.name + '-' + waves[waveName].length;
+            wave.spell = spell;
+            wave.shooter = pad.name;
+            wave.spellType = spellType;
             wave.body.velocity.setTo(line.direction * (config.waveSpeed * gameSpeed), 0);
 
         }
@@ -434,7 +438,74 @@ var downLineImpact;
         }
 
         // Verify colission between waves and waves !
+        for(var k in waves) {
+            for(var j in waves) {
+                if(waves[k].name !== waves[j].name) {
+                    game.physics.arcade.overlap(waves[k], waves[j], waveHitAnotherWave, null, this);
+                }
+            }
+        }
 
+    }
+
+    /**
+     * What we do when a wave hit an another wave
+     * @param waveA
+     * @param waveB
+     */
+    function waveHitAnotherWave(waveA, waveB) {
+
+        // No friendly fire ! Return now if detect friendly fire
+        var shooterAName = waveA.shooter;
+        var shooterBName = waveB.shooter;
+        if(shooterAName === shooterBName) {
+            return;
+        }
+
+        // Define who is the attack wave & who is the defense wave
+        var shooterAType = waveA.spellType;
+        var attackWave = (shooterAType == 'attack') ? waveA : waveB;
+        var defenseWave = (shooterAType == 'defense') ? waveA : waveB;
+
+        // Get attack and defense element
+
+        // Attack beat defense ?
+        if(attackWaveWin(attackWave.spell, defenseWave.spell)) {
+
+            // Kill defense wave
+            defenseWave.kill();
+
+            // Punish defense player
+            downgradePlayerLife(defenseWave.shooter, config.wrongCounterSpellLifeCost);
+
+        }
+        // Attack is beat by defense !
+        else {
+
+            // Kill both of the waves
+            attackWave.kill();
+            defenseWave.kill();
+
+        }
+
+    }
+
+    /**
+     * Define if the attack spell win on the defenseSpell
+     * @param attackSpell
+     * @param defenseSpell
+     */
+    function attackWaveWin(attackSpell, defenseSpell) {
+        if(attackSpell === 'fire' && defenseSpell === 'water') {
+            return false;
+        }
+        else if(attackSpell === 'water' && defenseSpell === 'grass') {
+            return false;
+        }
+        else if(attackSpell === 'grass' && defenseSpell === 'fire') {
+            return false;
+        }
+        return true;
     }
 
     /**
