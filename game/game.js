@@ -68,7 +68,8 @@ var downLineImpact;
         swipe: false,
         touchMove: false
     });
-    $('.difficulty_mode').css({'visibility': 'visible'}).find('.slick-slide').show(2000);
+    $('.difficulty_mode').css({'visibility': 'visible'}).find('.slick-slide').animate({width: "toggle"}, 2000);
+    $('.difficulty_mode .difficulty.slick-slide').css('line-height', $('.difficulty_mode').height() + 'px');
 
     // Init Phaser game
     game = new Phaser.Game($('#game').width(), $('#game').height(), Phaser.AUTO, 'game', null, true);
