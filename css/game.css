@@ -1,0 +1,101 @@
+
+/**
+ * Game CSS
+ */
+
+body.game_on {
+    background-color: beige;
+}
+
+header {
+    position: fixed;
+    left: 50%;
+    top: 0px;
+}
+#logo {
+    position: relative;
+    left: -50%;
+    width: 300px;
+    height: 150px;
+    background-color: red;
+}
+
+.character {
+    position: fixed;
+    top: 10%;
+    width: 400px;
+    height: 65%;
+    z-index: 5;
+}
+#character_1 {
+     left: 0px;
+     background-color: green;
+}
+#character_2 {
+    right: 0px;
+    background-color: gray;
+}
+
+#commands {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    display: flex;
+    width: 100%;
+    height: 23%;
+}
+
+.commands_board {
+    width: 40%;
+    margin: 10px;
+    background-color: cadetblue;
+    border: 3px solid black;
+}
+
+#helper {
+    width: 20%;
+    background-color: cadetblue;
+    border: 3px solid black;
+}
+
+.fullscreen {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    display: none;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.75);
+    z-index: 10;
+}
+
+.fullscreen h1 {
+    position: absolute;
+    top: 45%;
+    width: 100%;
+    margin: auto;
+    color: white;
+    text-align: center;
+}
+
+#pregame_screen {
+    display: none;
+}
+
+#pause_screen {
+    display: none;
+}
+
+#win_screen {
+    display: none;
+}
+
+#game {
+    position: fixed;
+    top: 10%;
+    left: 5%;
+    width: 90%;
+    height: 65%;
+    z-index: -1;
+    background-color: rgba(0,0,0,0.5);
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8" />
+        <title>Wave-mé-ha-mé-ha</title>
+        <link rel="stylesheet" href="css/game.css" type="text/css" />
+    </head>
+    <body class="game_on">
+
+        <!-- Game Logo -->
+        <header>
+            <div id="logo"></div>
+        </header>
+
+        <!-- The players ! -->
+        <div id="character_1" class="character"></div>
+        <div id="character_2" class="character"></div>
+
+        <!-- Game board -->
+        <div id="game"></div>
+
+        <!-- Box for commands controls & helper -->
+        <div id="commands">
+
+            <!-- Command for character 1 -->
+            <div id="character_1_commands" class="commands_board"></div>
+
+            <!-- Game helper to know which combo beat which one -->
+            <div id="helper"></div>
+
+            <!-- Command for character 2 -->
+            <div id="character_2_commands" class="commands_board"></div>
+
+        </div>
+
+
+        <!-- Pre-Game Screen -->
+        <div id="pregame_screen" class="fullscreen"><h1>TODO PRE-GAME SCREEN</h1></div>
+
+        <!-- Pause Screen -->
+        <div id="pause_screen" class="fullscreen"><h1>TODO PAUSE SCREEN</h1></div>
+
+        <!-- Win screen -->
+        <div id="win_screen" class="fullscreen"><h1>TODO WIN SCREEN</h1></div>
+
+        <!-- Library -->
+        <script src="lib/jquery-3.1.1.min.js"></script>
+        <script src="lib/phaser-2.6.2.min.js"></script>
+
+        <!-- Game -->
+        <script src="game/game.js"></script>
+
+    </body>
+</html>
