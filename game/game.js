@@ -73,6 +73,7 @@ var difficultyMode = 'easy';
     // Init Phaser game
     game = new Phaser.Game($('#game').width(), $('#game').height(), Phaser.AUTO, 'game', null, true);
     game.state.add('loading', { init: initLoading, closeLoading: closeLoading });
+    game.state.add('startscreen', { create: createStartScreen });
     game.state.add('pregame', { create: createPreGame });
     game.state.add('game', { preload: preload, create: create, update: update });
     game.state.add('winscreen', { create: createWinScreen });
@@ -82,7 +83,7 @@ var difficultyMode = 'easy';
      */
     // Show loading screen
     game.state.states['loading'].init();
-    game.state.start('game');
+    game.state.start('startscreen');
 
     /**
      * Init Loading by showing loading screen if not visible yet
@@ -121,12 +122,52 @@ var difficultyMode = 'easy';
     }
 
     /**
+     * Start Screen
+     */
+    function createStartScreen() {
+
+        // Display start screen
+        $('#start_screen').show(0);
+
+        // Close loading
+        game.state.states['loading'].closeLoading();
+
+        // Init players
+        players = jQuery.extend({}, playersInitState);
+
+        // Declare pads inputs listener
+        game.input.gamepad.start();
+        var playerId = 1;
+        for(var k in players) {
+            players[k].pad = game.input.gamepad['pad' + playerId];
+            players[k].pad.name = k;
+            // Declare pads inputs listener
+            players[k].pad.onDownCallback = function(buttonCode, value){
+                switch (buttonCode) {
+
+                    // Change difficulty for both players
+                    case Phaser.Gamepad.XBOX360_START:
+                        game.state.start('pregame');
+                        break;
+
+                    // Do nothing for other key
+                    default: break;
+                }
+            };
+            playerId +=1 ;
+        }
+
+        // Verify if gamepad are connected until they are !
+        setInterval(function(){ verifyIfGamepadAreConnected(); }, 200);
+
+    }
+    /**
      * Handle inputs on pregame screen
      */
     function createPreGame() {
 
         // Display pregame
-        $('#pregame_screen').show(0);
+        $('#pregame_screen').fadeIn();
 
         // Close loading
         game.state.states['loading'].closeLoading();
