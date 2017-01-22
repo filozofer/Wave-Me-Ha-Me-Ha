@@ -437,6 +437,12 @@ var difficultyMode = 'easy';
      * @param value
      */
     function onDownCallback(buttonCode, value) {
+
+        // Prevent user to continue to cast when game is over
+        if(game.state.states['game'].stopUpdate) {
+            return;
+        }
+
         switch (buttonCode) {
 
             // Add rune in players spell (defense & attack)
@@ -697,6 +703,9 @@ var difficultyMode = 'easy';
                 .attr('winner', enemy.name)
                 .attr('loser', player.name);
 
+            // Stop update
+            game.state.states['game'].stopUpdate = true;
+
             // Call end of game animation
             endOfBattleAnimation();
 
@@ -798,6 +807,11 @@ var difficultyMode = 'easy';
      * Update loop to handle movements & collisions
      */
     function update() {
+
+        // Allow to stop update on win for example
+        if(this.stopUpdate) {
+            return;
+        }
 
         // Verify colission between waves and player hitbox
         for(var k in waves) {
@@ -953,7 +967,7 @@ var difficultyMode = 'easy';
                     // Start the game again
                     case Phaser.Gamepad.XBOX360_START:
                         $('#win_screen').fadeOut();
-                        game.state.start('game');
+                        game.state.start('pregame');
                         break;
 
                     // Do nothing for other key
