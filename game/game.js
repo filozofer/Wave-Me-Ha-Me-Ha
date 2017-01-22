@@ -22,7 +22,7 @@ var config = {
     'hitByOtherPlayerLifeCost'   : 30,
     'waveSpeed'                  : 100,
     'wavemehamehaSpeed'          : 200,
-    'secondsBetweenEachSpeedUp'  : 10,
+    'secondsBetweenEachSpeedUp'  : 20,
     'secondsBeforeSpeedUpAfterWarning' : 2,
     'gameSpeedMultiplicator'     : 1.2
 };
@@ -83,7 +83,7 @@ var difficultyMode = 'easy';
      */
     // Show loading screen
     game.state.states['loading'].init();
-    game.state.start('startscreen');
+    game.state.start('game');
 
     /**
      * Init Loading by showing loading screen if not visible yet
@@ -297,12 +297,17 @@ var difficultyMode = 'easy';
 
         // Waveméhaméha init !
         wavemehamehaLeftPlayer = game.add.tileSprite(0, heightPercent(60), game.world.centerX, 150, 'wavemehamehaBeamLeftPlayer');
-        wavemehamehaRightPlayer = game.add.tileSprite(game.world.centerX, heightPercent(60), game.world.centerX, 150, 'wavemehamehaBeamRightPlayer');
+        wavemehamehaRightPlayer = game.add.tileSprite(game.world.width, heightPercent(60), 0, 150, 'wavemehamehaBeamRightPlayer');
         wavemehamehaLeftPlayer.scale.setTo(1, 1);
         wavemehamehaRightPlayer.scale.setTo(1, 1);
+        wavemehamehaRightPlayer.targetWidth = game.world.centerX;
+        wavemehamehaRightPlayer.targetX = game.world.centerX;
         wavemehamehaImpact = game.add.sprite(widthPercent(51.2), heightPercent(72), 'wavemehamehaBeamImpact');
         wavemehamehaImpact.anchor.setTo(0.5, 0.5);
         wavemehamehaImpact.scale.setTo(1, 0.9);
+        wavemehamehaLeftPlayer.alpha = 0;
+        wavemehamehaRightPlayer.alpha = 0;
+        wavemehamehaImpact.alpha = 0;
 
         // Attack & Defense lines between players init
         lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(5), game.world.centerX, 120, 'attackLine');
@@ -316,7 +321,7 @@ var difficultyMode = 'easy';
         for(var k in lines) {
             lines[k].tileScale.y = 0.6;
             lines[k].tileScale.x = 0.3;
-            lines[k].alpha = 0.7;
+            lines[k].alpha = 0;
             lines[k].beginOfLine = function() {
                 var x = (this.direction == 1) ? this.x : this.x + this.width;
                 return { x: x, y: this.y + this.height / 2 }
@@ -325,10 +330,10 @@ var difficultyMode = 'easy';
         upLineImpact = game.add.sprite(widthPercent(50) + 25, heightPercent(5)+ 5, 'lineImpact');
         upLineImpact.scale.setTo(0.6,0.6);
         upLineImpact.scale.x *= -1;
-        upLineImpact.alpha = 0.7;
+        upLineImpact.alpha = 0;
         downLineImpact = game.add.sprite(widthPercent(50) - 35, heightPercent(25) + 5, 'lineImpact');
         downLineImpact.scale.setTo(0.6,0.6);
-        downLineImpact.alpha = 0.7;
+        downLineImpact.alpha = 0;
 
         // Players hitbox init
         playersHitbox = game.add.group();
@@ -370,6 +375,34 @@ var difficultyMode = 'easy';
             players[k].difficulty = difficultyMode;
             playerId +=1 ;
         }
+
+        // Get UI position
+        var posCharacter1 = parseInt($('#character_1').css('left'));
+        $('#character_1').css('left', posCharacter1 - $('#character_1').width());
+        var posCharacter2 = parseInt($('#character_2').css('left'));
+        $('#character_2').css('right', posCharacter1 - $('#character_2').width());
+        $('#commands').css('bottom', -$('#commands').height());
+
+        // Animate UI
+        game.time.events.add(Phaser.Timer.SECOND * 2, function(){
+            $('#character_1').animate({'left': posCharacter1}, Phaser.Timer.SECOND * 2, function(){
+                //game.add.tween(wavemehamehaLeftPlayer.scale).to({x: 1}, Phaser.Timer.SECOND, null, true);
+                //game.add.tween(wavemehamehaRightPlayer.scale).to({x: 1}, Phaser.Timer.SECOND, null, true);
+                //game.add.tween(wavemehamehaRightPlayer).to({width: wavemehamehaRightPlayer.targetWidth}, Phaser.Timer.SECOND, null, true);
+                //game.add.tween(wavemehamehaRightPlayer).to({x: wavemehamehaRightPlayer.targetX}, Phaser.Timer.SECOND, null, true);
+                // Basic animations because we have not time for that !
+                game.add.tween(wavemehamehaLeftPlayer).to({alpha: 1}, Phaser.Timer.SECOND, null, true);
+                game.add.tween(wavemehamehaRightPlayer).to({alpha: 1}, Phaser.Timer.SECOND, null, true);
+                game.add.tween(wavemehamehaImpact).to({alpha: 1}, Phaser.Timer.SECOND, null, true);
+                for(var k in lines) {
+                    game.add.tween(lines[k]).to({alpha: 0.7}, Phaser.Timer.SECOND, null, true);
+                }
+                game.add.tween(upLineImpact).to({alpha: 1}, Phaser.Timer.SECOND, null, true);
+                game.add.tween(downLineImpact).to({alpha: 1}, Phaser.Timer.SECOND, null, true);
+            });
+            $('#character_2').animate({'right': posCharacter1}, Phaser.Timer.SECOND * 2);
+            $('#commands').animate({'bottom': 0}, Phaser.Timer.SECOND * 2);
+        }, this);
 
         // Print spell book in UI
         printSpellBookUI(spells[players['player1'].difficulty]);

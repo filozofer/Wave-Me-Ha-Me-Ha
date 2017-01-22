@@ -4,7 +4,7 @@
  */
 
 body.game_on {
-    background-image: url('../assets/images/background.jpg');
+    background-image: url('../assets/images/background.png');
     background-size: cover;
     font-family: 'Calibri';
     font-size: 20px;
