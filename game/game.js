@@ -6,10 +6,10 @@
 var debug = {
     enable: true,
     contexts: {
-        'rune': false,
-        'spell': false,
-        'spellBook': false,
-        'life': false,
+        'rune': true,
+        'spell': true,
+        'spellBook': true,
+        'life': true,
         'speed': true
     }
 };
@@ -64,6 +64,7 @@ var upLineImpact;
 var downLineImpact;
 var warningSpeedUp;
 var warningTween;
+var moveWavemehamehaImpact;
 var gameSpeed;
 var difficultyMode = 'easy';
 
@@ -81,7 +82,7 @@ var difficultyMode = 'easy';
      */
     // Show loading screen
     game.state.states['loading'].init();
-    game.state.start('pregame');
+    game.state.start('game');
 
     /**
      * Init Loading by showing loading screen if not visible yet
@@ -247,29 +248,32 @@ var difficultyMode = 'easy';
         players = jQuery.extend(true, {}, playersInitState);
         waves = jQuery.extend(true, {}, wavesInitState);
         lines = jQuery.extend(true, {}, linesInitState);
+        $('#character_1').attr('style', '');
+        $('#character_2').attr('style', '');
 
         // Start game physics mode
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
         // Waveméhaméha init !
-        wavemehamehaLeftPlayer = game.add.tileSprite(0, heightPercent(60), widthPercent(50), 120, 'wavemehamehaBeamLeftPlayer');
-        wavemehamehaRightPlayer = game.add.tileSprite(widthPercent(50), heightPercent(60), widthPercent(50), 120, 'wavemehamehaBeamRightPlayer');
-        wavemehamehaLeftPlayer.scale.setTo(1, 0.8);
-        wavemehamehaRightPlayer.scale.setTo(1, 0.8);
-        wavemehamehaImpact = game.add.sprite(widthPercent(50) - 140, heightPercent(60) - 60, 'wavemehamehaBeamImpact');
-        wavemehamehaImpact.scale.setTo(0.8, 0.8);
+        wavemehamehaLeftPlayer = game.add.tileSprite(0, heightPercent(60), game.world.centerX, 150, 'wavemehamehaBeamLeftPlayer');
+        wavemehamehaRightPlayer = game.add.tileSprite(game.world.centerX, heightPercent(60), game.world.centerX, 150, 'wavemehamehaBeamRightPlayer');
+        wavemehamehaLeftPlayer.scale.setTo(1, 1);
+        wavemehamehaRightPlayer.scale.setTo(1, 1);
+        wavemehamehaImpact = game.add.sprite(widthPercent(51.2), heightPercent(72), 'wavemehamehaBeamImpact');
+        wavemehamehaImpact.anchor.setTo(0.5, 0.5);
+        wavemehamehaImpact.scale.setTo(1, 0.9);
 
         // Attack & Defense lines between players init
-        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(5), widthPercent(50), 80, 'attackLine');
-        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(25), widthPercent(50), 80, 'defenseLine');
-        lines['attackPlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(5), widthPercent(50), 80, 'attackLine');
-        lines['defensePlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(25), widthPercent(50), 80, 'defenseLine');
+        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(5), game.world.centerX, 120, 'attackLine');
+        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(25), game.world.centerX, 120, 'defenseLine');
+        lines['attackPlayer2'] = game.add.tileSprite(game.world.centerX, heightPercent(25), game.world.centerX, 120, 'attackLine');
+        lines['defensePlayer2'] = game.add.tileSprite(game.world.centerX, heightPercent(5), game.world.centerX, 120, 'defenseLine');
         lines['attackPlayer1'].direction = 1;
         lines['defensePlayer1'].direction = 1;
         lines['attackPlayer2'].direction = -1;
         lines['defensePlayer2'].direction = -1;
         for(var k in lines) {
-            lines[k].tileScale.y = 0.4;
+            lines[k].tileScale.y = 0.6;
             lines[k].tileScale.x = 0.3;
             lines[k].alpha = 0.7;
             lines[k].beginOfLine = function() {
@@ -278,10 +282,12 @@ var difficultyMode = 'easy';
             };
         }
         upLineImpact = game.add.sprite(widthPercent(50) + 25, heightPercent(5)+ 5, 'lineImpact');
-        upLineImpact.scale.setTo(0.5,0.4);
+        upLineImpact.scale.setTo(0.6,0.6);
         upLineImpact.scale.x *= -1;
+        upLineImpact.alpha = 0.7;
         downLineImpact = game.add.sprite(widthPercent(50) - 35, heightPercent(25) + 5, 'lineImpact');
-        downLineImpact.scale.setTo(0.5,0.4);
+        downLineImpact.scale.setTo(0.6,0.6);
+        downLineImpact.alpha = 0.7;
 
         // Players hitbox init
         playersHitbox = game.add.group();
@@ -307,9 +313,9 @@ var difficultyMode = 'easy';
         }
 
         // Warning icon when speed up game
-        warningSpeedUp = game.add.image(game.world.centerX , heightPercent(45), 'warning');
+        warningSpeedUp = game.add.image(game.world.centerX , heightPercent(49), 'warning');
         warningSpeedUp.anchor.setTo(0.5);
-        warningSpeedUp.scale.setTo(0.5, 0.5);
+        warningSpeedUp.scale.setTo(0.4, 0.4);
         warningSpeedUp.alpha = 0;
 
         // Declare pads inputs listener
@@ -607,16 +613,77 @@ var difficultyMode = 'easy';
         wavemehamehaLeftPlayer.targetWidth = widthPercent(leftPlayerLife);
         wavemehamehaRightPlayer.targetWidth = widthPercent(rightPlayerLife);
         wavemehamehaRightPlayer.targetX = wavemehamehaLeftPlayer.targetWidth;
-        wavemehamehaImpact.targetX = wavemehamehaLeftPlayer.targetWidth - 140;
+        wavemehamehaImpact.targetX = wavemehamehaLeftPlayer.targetWidth;
 
         // Handle win/lose case !
         if(player.life <= 0) {
 
-            // Display the win screen
-            $('#win_screen').removeClass(player.name).addClass(enemy.name + 'Win');
-            game.state.start('winscreen');
+            // Tell to win screen which has win
+            $('#win_screen').removeClass(player.name).addClass(enemy.name + 'Win')
+                .attr('winner', enemy.name)
+                .attr('loser', player.name);
+
+            // Call end of game animation
+            endOfBattleAnimation();
 
         }
+
+    }
+
+    /**
+     * End of battle animation
+     */
+    function endOfBattleAnimation() {
+
+        // Winner & loser name
+        var winner = $('#win_screen').attr('winner');
+        var loser = $('#win_screen').attr('loser');
+
+        // Kill beam & waves
+        for(var k in lines) {
+            killWithOpacity(lines[k], Phaser.Timer.SECOND);
+        }
+        killWithOpacity(downLineImpact, Phaser.Timer.SECOND);
+        killWithOpacity(upLineImpact, Phaser.Timer.SECOND);
+        for(var k in waves) {
+            waves[k].forEachExists(function(wave){
+                killWithOpacity(wave, Phaser.Timer.SECOND);
+            }, this);
+        }
+        if(warningTween) { warningTween.stop() }
+        warningSpeedUp.alpha = 0;
+
+        // Kill the player
+        $({brightness: 1}).animate({brightness: 0}, {
+            duration: Phaser.Timer.SECOND * 3,
+            easing: 'swing', // or "linear"
+            step: function() {
+                $('#character_' + loser.slice(6)).css({
+                    '-webkit-filter': 'brightness('+this.brightness+')',
+                    'filter': 'brightness('+this.brightness+')'
+                });
+            },
+            complete: function(){
+                wavemehamehaLeftPlayer.kill();
+                wavemehamehaRightPlayer.kill();
+                wavemehamehaImpact.kill();
+                $('#character_' + loser.slice(6)).animate({'opacity': 0}, 500);
+            }
+        });
+
+        // Beam animation
+        moveWavemehamehaImpact = game.add.tween(wavemehamehaImpact);
+        moveWavemehamehaImpact.to({x: wavemehamehaImpact.x - 100}, 500, null, false, 0, -1, true);
+        moveWavemehamehaImpact = game.add.tween(wavemehamehaImpact);
+        var moveWavemehamehaImpactNext = game.add.tween(wavemehamehaImpact);
+        moveWavemehamehaImpactNext.to({x: wavemehamehaImpact.x + 100}, 500, null, false, 0, -1, true);
+        moveWavemehamehaImpact.chain(moveWavemehamehaImpactNext);
+        moveWavemehamehaImpact.start();
+
+        // Display win screen after animation
+        game.time.events.add(Phaser.Timer.SECOND * 4, function(){
+            game.state.start('winscreen');
+        }, this);
 
     }
 
@@ -678,7 +745,7 @@ var difficultyMode = 'easy';
             moveWavemehamehaLeft.to({ width: wavemehamehaLeftPlayer.targetWidth }, config.wavemehamehaSpeed, null, true);
             var moveWavemehamehaRight = game.add.tween(wavemehamehaRightPlayer);
             moveWavemehamehaRight.to({ width: wavemehamehaRightPlayer.targetWidth, x: wavemehamehaRightPlayer.targetX }, config.wavemehamehaSpeed, null, true);
-            var moveWavemehamehaImpact = game.add.tween(wavemehamehaImpact);
+            moveWavemehamehaImpact = game.add.tween(wavemehamehaImpact);
             moveWavemehamehaImpact.to({ x: wavemehamehaImpact.targetX }, config.wavemehamehaSpeed, null, true);
         }
     }
@@ -793,11 +860,13 @@ var difficultyMode = 'easy';
         }
     }
 
-
     /**
      * Show win screen and handle inputs
      */
     function createWinScreen(){
+
+        // Close loading
+        game.state.states['loading'].closeLoading();
 
         // Display win screen
         $('#win_screen').fadeIn();
@@ -819,6 +888,17 @@ var difficultyMode = 'easy';
             };
         }
 
+    }
+
+    /**
+     * Kill asset by reducing his opacity first, then kill it !
+     * @param element
+     */
+    function killWithOpacity(target, duration) {
+        var duration = (!duration) ? 500 : 1000;
+        var tween = game.add.tween(target).to({alpha: 0}, duration);
+        tween.onComplete.add(function (el) { el.kill(); }, this);
+        tween.start();
     }
 
 });})(jQuery);

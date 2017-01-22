@@ -20,24 +20,28 @@ header {
     left: -50%;
     width: 300px;
     height: 100px;
-    background-color: red;
+    margin-top: 15px;
+    background-image: url(../assets/images/logoInGame.png);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .character {
     position: fixed;
-    top: 10%;
-    width: 20%;
-    height: 65%;
+    top: 5%;
+    width: 28%;
+    height: 85%;
     z-index: 5;
     background-size: 100% 100%;
     background-repeat: no-repeat;
 }
 #character_1 {
-     left: 0px;
-     background-image: url('../assets/images/characterPlayer1.png');
+    left: -112px;
+    background-image: url('../assets/images/characterPlayer1.png');
 }
 #character_2 {
-    right: 0px;
+    right: -112px;
     background-image: url('../assets/images/characterPlayer2.png');
 }
 
@@ -238,6 +242,18 @@ header {
     display: none;
     background-color: black;
 }
+
+#win_screen .game_logo {
+    margin: auto;
+    width: 300px;
+    height: 100px;
+    margin-top: 5%;
+    background-image: url(../assets/images/logoInGame.png);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 #win_screen .win_message {
     display: none;
     width: 100%;
@@ -245,11 +261,16 @@ header {
     color: white;
     text-align: center;
 }
-#win_screen.player1Win .player1Win {
+#win_screen.player1Win .player1Win, #win_screen.player2Win .player2Win {
     display: block;
+    font-size: 60px;
 }
-#win_screen.player2Win .player2Win {
+
+#win_screen .cup {
+    margin: auto;
     display: block;
+    height: 50%;
+    margin-top: 2%;
 }
 
 #game {
