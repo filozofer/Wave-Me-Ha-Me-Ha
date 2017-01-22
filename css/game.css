@@ -175,6 +175,7 @@ header {
 
 #win_screen {
     display: none;
+    background-color: black;
 }
 #win_screen .win_message {
     display: none;

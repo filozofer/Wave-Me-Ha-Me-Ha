@@ -15,6 +15,7 @@ var debug = {
 
 // Configurable variable
 var config = {
+    'initGameSpeed'              : 1,
     'wrongSpellLifeCost'         : 5,
     'wrongCounterSpellLifeCost'  : 10,
     'hitByOtherPlayerLifeCost'   : 30,
@@ -31,28 +32,31 @@ var spells = {
 };
 
 // Init all game global vars
-var game;
-var waves = {
-    'attackWavesPlayer1'  : undefined,
-    'defenseWavesPlayer1' : undefined,
-    'attackWavesPlayer2'  : undefined,
-    'defenseWavesPlayer2':  undefined
+var wavesInitState = {
+    'attackWavesPlayer1'  : null,
+    'defenseWavesPlayer1' : null,
+    'attackWavesPlayer2'  : null,
+    'defenseWavesPlayer2':  null
 };
-var players = {
+var playersInitState = {
     'player1': { 'name': 'player1', 'difficulty': 'easy', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player2' },
     'player2': { 'name': 'player2', 'difficulty': 'easy', 'pad': undefined, 'defenseSpell': [], 'attackSpell': [], life: 50, 'enemyName': 'player1' }
 };
+var linesInitState = {
+    'attackPlayer1'   : null,
+    'defensePlayer1'  : null,
+    'attackPlayer2'  : null,
+    'defensePlayer2' : null
+};
+var game;
+var waves;
+var lines;
+var players;
 var playersHitbox;
+var gameSpeed;
 var wavemehamehaLeftPlayer;
 var wavemehamehaRightPlayer;
 var wavemehamehaImpact;
-var gameSpeed = 1;
-var lines = {
-    'attackPlayer1'   : [],
-    'defensePlayer1'  : [],
-    'attackPlayer2'  : [],
-    'defensePlayer2' : []
-};
 var upLineImpact;
 var downLineImpact;
 
@@ -75,12 +79,16 @@ var downLineImpact;
     game = new Phaser.Game($('#game').width(), $('#game').height(), Phaser.AUTO, 'game', null, true);
     game.state.add('pregame', { create: createPreGame });
     game.state.add('game', { preload: preload, create: create, update: update });
+    game.state.add('winscreen', { create: createWinScreen });
     game.state.start('pregame');
 
     /**
      * Handle inputs on pregame screen
      */
     function createPreGame() {
+
+        // Init players
+        players = jQuery.extend({}, playersInitState);
 
         // Declare pads inputs listener
         game.input.gamepad.start();
@@ -164,6 +172,12 @@ var downLineImpact;
      * Init game
      */
     function create() {
+
+        // Reset game variables for new game
+        gameSpeed = config.initGameSpeed;
+        players = jQuery.extend(true, {}, playersInitState);
+        waves = jQuery.extend(true, {}, wavesInitState);
+        lines = jQuery.extend(true, {}, linesInitState);
 
         // Start game physics mode
         game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -467,7 +481,8 @@ var downLineImpact;
         if(player.life <= 0) {
 
             // Display the win screen
-            $('#win_screen').addClass(enemy.name + 'Win').fadeIn();
+            $('#win_screen').removeClass(player.name).addClass(enemy.name + 'Win');
+            game.state.start('winscreen');
 
         }
 
@@ -680,6 +695,33 @@ var downLineImpact;
          bricks.callAll('revive');
          }
          */
+
+    }
+
+    /**
+     * Show win screen and handle inputs
+     */
+    function createWinScreen(){
+
+        // Display win screen
+        $('#win_screen').fadeIn();
+
+        // If one of the players play start, the game start again !
+        for(var k in players) {
+            players[k].pad.onDownCallback = function(buttonCode, value){
+                switch (buttonCode) {
+
+                    // Start the game again
+                    case Phaser.Gamepad.XBOX360_START:
+                        $('#win_screen').fadeOut();
+                        game.state.start('game');
+                        break;
+
+                    // Do nothing for other key
+                    default: break;
+                }
+            };
+        }
 
     }
 
