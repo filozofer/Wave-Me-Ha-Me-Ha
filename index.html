@@ -8,6 +8,11 @@
     </head>
     <body class="game_on">
 
+        <!-- Loading Screen -->
+        <div id="loading_screen" class="fullscreen">
+            <img src="assets/images/loader.gif" alt="Loader" id="loader" />
+        </div>
+
         <!-- Game Logo -->
         <header>
             <div id="logo"></div>
@@ -50,11 +55,13 @@
             <div class="commands_instructions"></div>
 
             <!-- Difficulty mode -->
-            <div class="difficulty_mode slider center">
-                <div class="difficulty" difficulty="easy">Easy</div>
-                <div class="difficulty" difficulty="medium">Medium</div>
-                <div class="difficulty" difficulty="hard">Hard</div>
-                <div class="difficulty" difficulty="crazy">Crazy</div>
+            <div class="difficulty_mode_container">
+                <div class="difficulty_mode slider center">
+                    <div class="difficulty" difficulty="easy">Easy</div>
+                    <div class="difficulty" difficulty="medium">Medium</div>
+                    <div class="difficulty" difficulty="hard">Hard</div>
+                    <div class="difficulty" difficulty="crazy">Crazy</div>
+                </div>
             </div>
 
             <!-- Press A buttons -->

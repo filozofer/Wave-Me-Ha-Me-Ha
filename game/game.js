@@ -53,42 +53,85 @@ var waves;
 var lines;
 var players;
 var playersHitbox;
-var gameSpeed;
 var wavemehamehaLeftPlayer;
 var wavemehamehaRightPlayer;
 var wavemehamehaImpact;
 var upLineImpact;
 var downLineImpact;
+var gameSpeed;
+var difficultyMode;
 
 (function($) {$(document).ready(function() {
 
-    // Prepare select difficulty component
-    $('.difficulty_mode').slick({
-        centerMode: true,
-        centerPadding: '60px',
-        slidesToShow: 3,
-        arrows: false,
-        draggable: false,
-        swipe: false,
-        touchMove: false
-    });
-    $('.difficulty_mode').css({'visibility': 'visible'}).find('.slick-slide').animate({width: "toggle"}, 2000);
-    $('.difficulty_mode .difficulty.slick-slide').css('line-height', $('.difficulty_mode').height() + 'px');
-
     // Init Phaser game
     game = new Phaser.Game($('#game').width(), $('#game').height(), Phaser.AUTO, 'game', null, true);
+    game.state.add('loading', { init: initLoading, closeLoading: closeLoading });
     game.state.add('pregame', { create: createPreGame });
     game.state.add('game', { preload: preload, create: create, update: update });
     game.state.add('winscreen', { create: createWinScreen });
+
+    /**
+     * Start game on loading screen waiting for game to be load
+     */
+    // Show loading screen
+    game.state.states['loading'].init();
     game.state.start('pregame');
+
+    /**
+     * Init Loading by showing loading screen if not visible yet
+     */
+    function initLoading(endLoadingCheck, nextState) {
+        // Show loading screen
+        if(!$('#loading_screen').is(':visible')) {
+            $('#loading_screen').show(0);
+        }
+    }
+
+    /**
+     * Loading handler state
+     */
+    function closeLoading() {
+
+        // Set default degree value (0)
+        $('#loader').attr('deg', ($('#loader').attr('deg') != undefined) ? parseInt( $('#loader').attr('deg')) : 0);
+
+        // Get actual degree
+        var actualDeg = parseInt($('#loader').attr('deg'));
+
+        // Fast speed rotation for loader
+        $('#loader').css('transform', 'rotate(' + (actualDeg + 1440) + 'deg)');
+        $('#loader').attr('deg', actualDeg + 1440);
+
+        // Close the loading screen
+        setTimeout(function(){
+            $('#loading_screen').fadeOut();
+        }, 1000);
+
+    }
 
     /**
      * Handle inputs on pregame screen
      */
     function createPreGame() {
 
+        // Close loading
+        game.state.states['loading'].closeLoading();
+
         // Init players
         players = jQuery.extend({}, playersInitState);
+
+        // Prepare select difficulty component
+        $('.difficulty_mode').slick({
+            centerMode: true,
+            centerPadding: '60px',
+            slidesToShow: 3,
+            arrows: false,
+            draggable: false,
+            swipe: false,
+            touchMove: false
+        });
+        $('.difficulty_mode').css({'visibility': 'visible'}).find('.slick-slide').animate({width: "toggle"}, 2000);
+        $('.difficulty_mode .difficulty.slick-slide').css('line-height', $('.difficulty_mode').height() + 'px');
 
         // Declare pads inputs listener
         game.input.gamepad.start();
@@ -103,15 +146,11 @@ var downLineImpact;
                     // Change difficulty for both players
                     case Phaser.Gamepad.XBOX360_DPAD_RIGHT:
                         $('.difficulty_mode').slick('slickNext');
-                        for(var k in players) {
-                            players[k].difficulty = $('.difficulty_mode .slick-current').attr('difficulty');
-                        }
+                        difficultyMode = $('.difficulty_mode .slick-current').attr('difficulty');
                         break;
                     case Phaser.Gamepad.XBOX360_DPAD_LEFT:
                         $('.difficulty_mode').slick('slickPrev');
-                        for(var k in players) {
-                            players[k].difficulty = $('.difficulty_mode .slick-current').attr('difficulty');
-                        }
+                        difficultyMode = $('.difficulty_mode .slick-current').attr('difficulty');
                         break;
 
                     // Validate player is ready
@@ -123,9 +162,9 @@ var downLineImpact;
                         // If both player ready start the game !
                         if($('.press_a_container .press_a.ready').length === 2) {
                             setTimeout(function(){
-                                $('#pregame_screen').fadeOut(1000, function(){
-                                    game.state.start('game');
-                                });
+                                game.state.states['loading'].init();
+                                $('#pregame_screen').hide(0);
+                                game.state.start('game');
                             }, 500);
                         }
                         break;
@@ -147,6 +186,9 @@ var downLineImpact;
      */
     function preload() {
 
+        // Show loading screen
+        game.state.states['loading'].init();
+
         // Load waveméhaméha assets
         game.load.image('wavemehamehaBeamLeftPlayer', 'assets/images/wavemehamehaBeamLeftPlayer.png');
         game.load.image('wavemehamehaBeamRightPlayer', 'assets/images/wavemehamehaBeamRightPlayer.png');
@@ -165,6 +207,14 @@ var downLineImpact;
         // Load player hitbox
         game.load.image('player1Hitbox', 'assets/images/player1Hitbox.png');
         game.load.image('player2Hitbox', 'assets/images/player2Hitbox.png');
+
+        // Call loading screen
+        game.load.onLoadComplete.add(function(){
+            // Fake loading time // TODO: Remove this ?
+            setTimeout(function(){
+                game.state.states['loading'].closeLoading();
+            }, 1000);
+        }, this);
 
     }
 
@@ -202,6 +252,7 @@ var downLineImpact;
         for(var k in lines) {
             lines[k].tileScale.y = 0.4;
             lines[k].tileScale.x = 0.3;
+            lines[k].alpha = 0.7;
             lines[k].beginOfLine = function() {
                 var x = (this.direction == 1) ? this.x : this.x + this.width;
                 return { x: x, y: this.y + this.height / 2 }
@@ -244,6 +295,7 @@ var downLineImpact;
             players[k].pad.name = k;
             players[k].pad.onDownCallback = onDownCallback;
             players[k].pad.onAxisCallback = onAxisCallback;
+            players[k].difficulty = difficultyMode;
             playerId +=1 ;
         }
 
