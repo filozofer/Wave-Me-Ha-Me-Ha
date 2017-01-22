@@ -6,10 +6,11 @@
 var debug = {
     enable: true,
     contexts: {
-        'rune': true,
-        'spell': true,
-        'spellBook': true,
-        'life': true
+        'rune': false,
+        'spell': false,
+        'spellBook': false,
+        'life': false,
+        'speed': true
     }
 };
 
@@ -20,7 +21,10 @@ var config = {
     'wrongCounterSpellLifeCost'  : 10,
     'hitByOtherPlayerLifeCost'   : 30,
     'waveSpeed'                  : 100,
-    'wavemehamehaSpeed'          : 200
+    'wavemehamehaSpeed'          : 200,
+    'secondsBetweenEachSpeedUp'  : 10,
+    'secondsBeforeSpeedUpAfterWarning' : 2,
+    'gameSpeedMultiplicator'     : 1.2
 };
 
 // Spell Combos !
@@ -58,8 +62,10 @@ var wavemehamehaRightPlayer;
 var wavemehamehaImpact;
 var upLineImpact;
 var downLineImpact;
+var warningSpeedUp;
+var warningTween;
 var gameSpeed;
-var difficultyMode;
+var difficultyMode = 'easy';
 
 (function($) {$(document).ready(function() {
 
@@ -75,12 +81,16 @@ var difficultyMode;
      */
     // Show loading screen
     game.state.states['loading'].init();
-    game.state.start('pregame');
+    game.state.start('game');
 
     /**
      * Init Loading by showing loading screen if not visible yet
      */
     function initLoading(endLoadingCheck, nextState) {
+
+        // Hide other fullscreen window
+        $('.fullscreen').hide(0);
+
         // Show loading screen
         if(!$('#loading_screen').is(':visible')) {
             $('#loading_screen').show(0);
@@ -114,6 +124,9 @@ var difficultyMode;
      */
     function createPreGame() {
 
+        // Display pregame
+        $('#pregame_screen').show(0);
+
         // Close loading
         game.state.states['loading'].closeLoading();
 
@@ -132,6 +145,9 @@ var difficultyMode;
         });
         $('.difficulty_mode').css({'visibility': 'visible'}).find('.slick-slide').animate({width: "toggle"}, 2000);
         $('.difficulty_mode .difficulty.slick-slide').css('line-height', $('.difficulty_mode').height() + 'px');
+
+        // Default difficulty mode
+        difficultyMode = 'easy';
 
         // Declare pads inputs listener
         game.input.gamepad.start();
@@ -207,6 +223,9 @@ var difficultyMode;
         // Load player hitbox
         game.load.image('player1Hitbox', 'assets/images/player1Hitbox.png');
         game.load.image('player2Hitbox', 'assets/images/player2Hitbox.png');
+
+        // Load warning image
+        game.load.image('warning', 'assets/images/warning.png');
 
         // Call loading screen
         game.load.onLoadComplete.add(function(){
@@ -287,6 +306,12 @@ var difficultyMode;
             waves[k].name = k;
         }
 
+        // Warning icon when speed up game
+        warningSpeedUp = game.add.image(game.world.centerX , game.world.height - 30, 'warning');
+        warningSpeedUp.anchor.setTo(0.5);
+        warningSpeedUp.scale.setTo(0.5, 0.5);
+        warningSpeedUp.alpha = 0;
+
         // Declare pads inputs listener
         game.input.gamepad.start();
         var playerId = 1;
@@ -298,6 +323,9 @@ var difficultyMode;
             players[k].difficulty = difficultyMode;
             playerId +=1 ;
         }
+
+        // Increase game speed
+        game.time.events.loop(Phaser.Timer.SECOND * config.secondsBetweenEachSpeedUp, increaseGameSpeed, this);
 
         // Print spell book in console (thanx me for that !)
         console.gameLog(JSON.stringify(spells[players['player1'].difficulty]), 'spellBook');
@@ -396,6 +424,40 @@ var difficultyMode;
     var canUseAxisRight = true;
 
     /**
+     * Increase game speed
+     */
+    function increaseGameSpeed(){
+
+        // Warning !
+        console.gameLog('Warning: game speed up in ' + config.secondsBeforeSpeedUpAfterWarning + ' seconds !' , 'speed');
+         warningTween = game.add.tween(warningSpeedUp);
+         warningTween.to({ alpha: 1 }, 100, 'Linear', true, 0, -1, true);
+
+        // Increase speed after warning time
+        game.time.events.add(Phaser.Timer.SECOND * config.secondsBeforeSpeedUpAfterWarning, function(){
+
+            // Change gameSpeed for next waves
+            gameSpeed *= config.gameSpeedMultiplicator;
+
+            // Change actual waves speed (velocity)
+            for(var k in waves) {
+                waves[k].forEachExists(function(wave){
+                    wave.body.velocity.x *= config.gameSpeedMultiplicator;
+                }, this);
+            }
+
+            // Log the speed up
+            console.gameLog('Game speed up ! Actual speed: x' + gameSpeed, 'speed');
+
+            // Stop warning tween and hide warning icon
+            warningTween.stop();
+            warningSpeedUp.alpha = 0;
+
+        }, this);
+
+    }
+
+    /**
      * Add rune in one of the player spell (defense or attack)
      * @param pad SinglePad
      * @param spellType string attack|defense
@@ -457,7 +519,7 @@ var difficultyMode;
             wave.shooter = pad.name;
             wave.spellType = spellType;
             wave.scale.setTo(0.25 * line.direction, 0.25);
-            wave.body.velocity.setTo(line.direction * (config.waveSpeed * gameSpeed), 0);
+            wave.body.velocity.setTo(parseInt(line.direction * (config.waveSpeed * gameSpeed)), 0);
 
         }
         // If runes doas not match a spell, player must to be punish !
@@ -473,7 +535,6 @@ var difficultyMode;
         // Consume the runes of the spell
         players[pad.name][spellTypeVar] = [];
     }
-
 
     /**
      * Allow to retrieve the spell name corresponding to a list of runes
@@ -576,7 +637,7 @@ var difficultyMode;
     /**
      * Update loop to handle movements & collisions
      */
-    function update () {
+    function update() {
 
         // Verify colission between waves and player hitbox
         for(var k in waves) {
@@ -713,42 +774,6 @@ var difficultyMode;
         }
     }
 
-    /**
-     * Handle collission between waves and waves
-     * @param _wave1
-     * @param _wave2
-     */
-    function wavesCollision(_wave1, _wave2) {
-
-        // TODO
-        /*
-         _brick.kill();
-
-         score += 10;
-
-         scoreText.text = 'score: ' + score;
-
-         //  Are they any bricks left?
-         if (bricks.countLiving() == 0)
-         {
-         //  New level starts
-         score += 1000;
-         scoreText.text = 'score: ' + score;
-         introText.text = '- Next Level -';
-
-         //  Let's move the ball back to the paddle
-         ballOnPaddle = true;
-         ball.body.velocity.set(0);
-         ball.x = paddle.x + 16;
-         ball.y = paddle.y - 16;
-         ball.animations.stop();
-
-         //  And bring the bricks back from the dead :)
-         bricks.callAll('revive');
-         }
-         */
-
-    }
 
     /**
      * Show win screen and handle inputs
