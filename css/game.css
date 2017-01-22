@@ -19,24 +19,26 @@ header {
     position: relative;
     left: -50%;
     width: 300px;
-    height: 150px;
+    height: 100px;
     background-color: red;
 }
 
 .character {
     position: fixed;
     top: 10%;
-    width: 15%;
+    width: 20%;
     height: 65%;
     z-index: 5;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
 }
 #character_1 {
      left: 0px;
-     background-color: rgba(0,0,0,0.6);
+     background-image: url('../assets/images/characterPlayer1.png');
 }
 #character_2 {
     right: 0px;
-    background-color: rgba(0,0,0,0.6);
+    background-image: url('../assets/images/characterPlayer2.png');
 }
 
 #commands {
@@ -49,16 +51,55 @@ header {
 }
 
 .commands_board {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     width: 40%;
-    margin: 10px;
-    background-color: cadetblue;
-    border: 3px solid black;
+    height: 100%;
+    margin-top: -35px;
+}
+
+.commands_board.right {
+    align-items: flex-start;
+}
+
+.commands_board .spell {
+    display: flex;
+    align-items: center;
+    width: 50%;
+    justify-content: center;
+}
+
+.commands_board .spell_icon {
+    height: 70px;
+    margin: 0px 10px;
+}
+
+.commands_board .command_icon {
+    height: 40px;
+    margin: 5px;
+    margin-top: 25px;
+}
+
+.commands_board .grass_spell .spell_icon {
+    position: relative;
+    left: -5px;
+}
+
+.commands_board .water_spell .spell_icon {
+    position: relative;
+    left: 3px;
 }
 
 #helper {
     width: 20%;
-    background-color: cadetblue;
-    border: 3px solid black;
+    background-image: url(../assets/images/trinity.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    position: relative;
+    height: 230px;
+    top: -45px;
 }
 
 .fullscreen {
@@ -146,7 +187,12 @@ header {
 #pregame_screen .press_a_container {
     display: flex;
     height: 10%;
-    margin-top: 5%;
+    margin-top: 0%;
+}
+
+@keyframes twinkly {
+    0% {opacity: 0.1;}
+    100% {opacity: 1;}
 }
 
 #pregame_screen .press_a {
@@ -156,14 +202,15 @@ header {
     background-repeat: no-repeat;
     background-size: 260px 100px;
     color: transparent;
+    animation: twinkly 0.5s alternate infinite;
 }
 #pregame_screen .press_a.ready {
     background: none;
     color: white;
     text-align: center;
     font-size: 61px;
+    animation: none;
 }
-
 
 #pregame_screen .error {
     display: none;

@@ -81,7 +81,7 @@ var difficultyMode = 'easy';
      */
     // Show loading screen
     game.state.states['loading'].init();
-    game.state.start('game');
+    game.state.start('pregame');
 
     /**
      * Init Loading by showing loading screen if not visible yet
@@ -260,10 +260,10 @@ var difficultyMode = 'easy';
         wavemehamehaImpact.scale.setTo(0.8, 0.8);
 
         // Attack & Defense lines between players init
-        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(15), widthPercent(50), 80, 'attackLine');
-        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(35), widthPercent(50), 80, 'defenseLine');
-        lines['attackPlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(35), widthPercent(50), 80, 'attackLine');
-        lines['defensePlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(15), widthPercent(50), 80, 'defenseLine');
+        lines['attackPlayer1'] = game.add.tileSprite(0, heightPercent(5), widthPercent(50), 80, 'attackLine');
+        lines['defensePlayer1'] = game.add.tileSprite(0, heightPercent(25), widthPercent(50), 80, 'defenseLine');
+        lines['attackPlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(5), widthPercent(50), 80, 'attackLine');
+        lines['defensePlayer2'] = game.add.tileSprite(widthPercent(50), heightPercent(25), widthPercent(50), 80, 'defenseLine');
         lines['attackPlayer1'].direction = 1;
         lines['defensePlayer1'].direction = 1;
         lines['attackPlayer2'].direction = -1;
@@ -277,10 +277,10 @@ var difficultyMode = 'easy';
                 return { x: x, y: this.y + this.height / 2 }
             };
         }
-        upLineImpact = game.add.sprite(widthPercent(50) + 25, heightPercent(15)+ 5, 'lineImpact');
+        upLineImpact = game.add.sprite(widthPercent(50) + 25, heightPercent(5)+ 5, 'lineImpact');
         upLineImpact.scale.setTo(0.5,0.4);
         upLineImpact.scale.x *= -1;
-        downLineImpact = game.add.sprite(widthPercent(50) - 35, heightPercent(35) + 5, 'lineImpact');
+        downLineImpact = game.add.sprite(widthPercent(50) - 35, heightPercent(25) + 5, 'lineImpact');
         downLineImpact.scale.setTo(0.5,0.4);
 
         // Players hitbox init
@@ -307,7 +307,7 @@ var difficultyMode = 'easy';
         }
 
         // Warning icon when speed up game
-        warningSpeedUp = game.add.image(game.world.centerX , game.world.height - 30, 'warning');
+        warningSpeedUp = game.add.image(game.world.centerX , heightPercent(45), 'warning');
         warningSpeedUp.anchor.setTo(0.5);
         warningSpeedUp.scale.setTo(0.5, 0.5);
         warningSpeedUp.alpha = 0;
@@ -324,11 +324,30 @@ var difficultyMode = 'easy';
             playerId +=1 ;
         }
 
+        // Print spell book in UI
+        printSpellBookUI(spells[players['player1'].difficulty]);
+
+        // Print spell book in console
+        console.gameLog(JSON.stringify(spells[players['player1'].difficulty]), 'spellBook');
+
         // Increase game speed
         game.time.events.loop(Phaser.Timer.SECOND * config.secondsBetweenEachSpeedUp, increaseGameSpeed, this);
 
-        // Print spell book in console (thanx me for that !)
-        console.gameLog(JSON.stringify(spells[players['player1'].difficulty]), 'spellBook');
+
+    }
+
+    /**
+     * Print spell book UI
+     */
+    function printSpellBookUI(book) {
+
+        // Print each spell in UI
+        for(var spell in book) {
+            $('.commands_board .' + spell + '_spell .runes_list').html(book[spell].split('-').map(function(rune){
+                $rune = $('<img>').addClass('command_icon').attr('src', 'assets/images/command_' + rune + '.png');
+                return $('<div>').append($rune).html();
+            }).join(''));
+        }
 
     }
 
