@@ -83,7 +83,7 @@ var difficultyMode = 'easy';
      */
     // Show loading screen
     game.state.states['loading'].init();
-    game.state.start('game');
+    game.state.start('startscreen');
 
     /**
      * Init Loading by showing loading screen if not visible yet
@@ -285,6 +285,7 @@ var difficultyMode = 'easy';
     function create() {
 
         // Reset game variables for new game
+        this.stopUpdate = false;
         gameSpeed = config.initGameSpeed;
         players = jQuery.extend(true, {}, playersInitState);
         waves = jQuery.extend(true, {}, wavesInitState);
@@ -297,11 +298,9 @@ var difficultyMode = 'easy';
 
         // Waveméhaméha init !
         wavemehamehaLeftPlayer = game.add.tileSprite(0, heightPercent(60), game.world.centerX, 150, 'wavemehamehaBeamLeftPlayer');
-        wavemehamehaRightPlayer = game.add.tileSprite(game.world.width, heightPercent(60), 0, 150, 'wavemehamehaBeamRightPlayer');
+        wavemehamehaRightPlayer = game.add.tileSprite(game.world.centerX, heightPercent(60), game.world.centerX, 150, 'wavemehamehaBeamRightPlayer');
         wavemehamehaLeftPlayer.scale.setTo(1, 1);
         wavemehamehaRightPlayer.scale.setTo(1, 1);
-        wavemehamehaRightPlayer.targetWidth = game.world.centerX;
-        wavemehamehaRightPlayer.targetX = game.world.centerX;
         wavemehamehaImpact = game.add.sprite(widthPercent(51.2), heightPercent(72), 'wavemehamehaBeamImpact');
         wavemehamehaImpact.anchor.setTo(0.5, 0.5);
         wavemehamehaImpact.scale.setTo(1, 0.9);
@@ -352,7 +351,7 @@ var difficultyMode = 'easy';
 
         // Init waves groups properties
         for(var k in waves) {
-            waves[k] =  game.add.group();
+            waves[k] = game.add.group();
             waves[k].enableBody = true;
             waves[k].physicsBodyType = Phaser.Physics.ARCADE;
             waves[k].name = k;
@@ -370,8 +369,7 @@ var difficultyMode = 'easy';
         for(var k in players) {
             players[k].pad = game.input.gamepad['pad' + playerId];
             players[k].pad.name = k;
-            players[k].pad.onDownCallback = onDownCallback;
-            players[k].pad.onAxisCallback = onAxisCallback;
+            mapInputsToPlayersAfterXSeconds(players[k], Phaser.Timer.SECOND * 4)
             players[k].difficulty = difficultyMode;
             playerId +=1 ;
         }
@@ -379,17 +377,12 @@ var difficultyMode = 'easy';
         // Get UI position
         var posCharacter1 = parseInt($('#character_1').css('left'));
         $('#character_1').css('left', posCharacter1 - $('#character_1').width());
-        var posCharacter2 = parseInt($('#character_2').css('left'));
         $('#character_2').css('right', posCharacter1 - $('#character_2').width());
         $('#commands').css('bottom', -$('#commands').height());
 
         // Animate UI
         game.time.events.add(Phaser.Timer.SECOND * 2, function(){
             $('#character_1').animate({'left': posCharacter1}, Phaser.Timer.SECOND * 2, function(){
-                //game.add.tween(wavemehamehaLeftPlayer.scale).to({x: 1}, Phaser.Timer.SECOND, null, true);
-                //game.add.tween(wavemehamehaRightPlayer.scale).to({x: 1}, Phaser.Timer.SECOND, null, true);
-                //game.add.tween(wavemehamehaRightPlayer).to({width: wavemehamehaRightPlayer.targetWidth}, Phaser.Timer.SECOND, null, true);
-                //game.add.tween(wavemehamehaRightPlayer).to({x: wavemehamehaRightPlayer.targetX}, Phaser.Timer.SECOND, null, true);
                 // Basic animations because we have not time for that !
                 game.add.tween(wavemehamehaLeftPlayer).to({alpha: 1}, Phaser.Timer.SECOND, null, true);
                 game.add.tween(wavemehamehaRightPlayer).to({alpha: 1}, Phaser.Timer.SECOND, null, true);
@@ -413,7 +406,17 @@ var difficultyMode = 'easy';
         // Increase game speed
         game.time.events.loop(Phaser.Timer.SECOND * config.secondsBetweenEachSpeedUp, increaseGameSpeed, this);
 
+    }
 
+    /**
+     * Map input to player (allow to call this function after game is ready and not before
+     * @param player
+     */
+    function mapInputsToPlayersAfterXSeconds(player, seconds) {
+        game.time.events.add(seconds, function() {
+            player.pad.onDownCallback = onDownCallback;
+            player.pad.onAxisCallback = onAxisCallback;
+        });
     }
 
     /**
@@ -570,9 +573,16 @@ var difficultyMode = 'easy';
      */
     function addRuneInSpell(pad, spellType, rune) {
         spellType = (spellType == 'attack') ? 'attackSpell' : 'defenseSpell';
-        if(players[pad.name][spellType].length < 5) {
+        if(players[pad.name][spellType].length < 4) {
+
+            // Put rune in spell bar
             players[pad.name][spellType].push(rune);
             console.gameLog(pad.name + ' cast rune for his ' + spellType + ' : ' + rune, 'rune');
+
+            // Display rune in UI
+            $rune = $('<img>').addClass('command_icon').attr('src', 'assets/images/command_' + rune + '.png');
+            $('#character_' + pad.name.slice(6) + '_runes_bar').append($rune)
+
         }
         else {
             console.gameLog(pad.name + ' try to cast rune but his ' + spellType + ' is full.', 'rune');
@@ -587,6 +597,7 @@ var difficultyMode = 'easy';
     function removeRuneInSpell(pad, spellType) {
         spellType = (spellType == 'attack') ? 'attackSpell' : 'defenseSpell';
         players[pad.name][spellType] = [];
+        $('#character_' + pad.name.slice(6) + '_runes_bar').html('');
         console.gameLog(pad.name + ' remove all runes for his ' + spellType, 'rune');
     }
 
@@ -639,6 +650,7 @@ var difficultyMode = 'easy';
 
         // Consume the runes of the spell
         players[pad.name][spellTypeVar] = [];
+        $('#character_' + pad.name.slice(6) + '_runes_bar').html('');
     }
 
     /**
