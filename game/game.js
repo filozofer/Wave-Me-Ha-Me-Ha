@@ -166,6 +166,9 @@ var difficultyMode = 'easy';
      */
     function createPreGame() {
 
+        // Reset pregrame screen
+        $('.press_a_container .press_a').removeClass('ready');
+
         // Display pregame
         $('#pregame_screen').fadeIn();
 
@@ -572,6 +575,7 @@ var difficultyMode = 'easy';
      * @param inputCode integer Phaser.Gamepad.BUTTON_MAPPING
      */
     function addRuneInSpell(pad, spellType, rune) {
+        spellTypeSimple = spellType;
         spellType = (spellType == 'attack') ? 'attackSpell' : 'defenseSpell';
         if(players[pad.name][spellType].length < 4) {
 
@@ -581,7 +585,7 @@ var difficultyMode = 'easy';
 
             // Display rune in UI
             $rune = $('<img>').addClass('command_icon').attr('src', 'assets/images/command_' + rune + '.png');
-            $('#character_' + pad.name.slice(6) + '_runes_bar').append($rune)
+            $('#character_' + pad.name.slice(6) + '_runes_bar_' + spellTypeSimple).append($rune)
 
         }
         else {
@@ -595,10 +599,10 @@ var difficultyMode = 'easy';
      * @param spellType string attack|defense
      */
     function removeRuneInSpell(pad, spellType) {
-        spellType = (spellType == 'attack') ? 'attackSpell' : 'defenseSpell';
-        players[pad.name][spellType] = [];
-        $('#character_' + pad.name.slice(6) + '_runes_bar').html('');
-        console.gameLog(pad.name + ' remove all runes for his ' + spellType, 'rune');
+        var spellTypeBar = (spellType == 'attack') ? 'attackSpell' : 'defenseSpell';
+        players[pad.name][spellTypeBar] = [];
+        $('#character_' + pad.name.slice(6) + '_runes_bar_' + spellType).html('');
+        console.gameLog(pad.name + ' remove all runes for his ' + spellTypeBar, 'rune');
     }
 
     /**
@@ -650,7 +654,7 @@ var difficultyMode = 'easy';
 
         // Consume the runes of the spell
         players[pad.name][spellTypeVar] = [];
-        $('#character_' + pad.name.slice(6) + '_runes_bar').html('');
+        $('#character_' + pad.name.slice(6) + '_runes_bar_' + spellType).html('');
     }
 
     /**

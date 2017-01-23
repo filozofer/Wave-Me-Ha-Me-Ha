@@ -103,7 +103,7 @@ header {
     background-position: center;
     position: relative;
     height: 230px;
-    top: -45px;
+    top: -60px;
 }
 
 #start_screen {
@@ -182,7 +182,7 @@ header {
 
 #pregame_screen .commands_instructions {
     width: 80%;
-    height: 50%;
+    height: 40%;
     margin: auto;
     background-image: url('../assets/images/commandInstructions.png');
     background-size: contain;
@@ -318,11 +318,23 @@ header {
     height: 10%;
     z-index: 5;
 }
-#character_1_runes_bar {
-    left: 15%;
+.runes_bar.player1_bar {
+    left: 16%;
 }
-#character_2_runes_bar {
-    right: 15%;
+.runes_bar.player2_bar {
+    right: 16%;
+}
+.runes_bar.player1_bar.attack {
+    top: 2%;
+}
+.runes_bar.player1_bar.defense {
+    top: 39%;
+}
+.runes_bar.player2_bar.attack {
+    top: 39%;
+}
+.runes_bar.player2_bar.defense {
+    top: 2%;
 }
 .runes_bar .command_icon {
     margin: 0px 10px;
