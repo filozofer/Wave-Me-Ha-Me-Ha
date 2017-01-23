@@ -179,17 +179,19 @@ var difficultyMode = 'easy';
         players = jQuery.extend({}, playersInitState);
 
         // Prepare select difficulty component
-        $('.difficulty_mode').slick({
-            centerMode: true,
-            centerPadding: '60px',
-            slidesToShow: 3,
-            arrows: false,
-            draggable: false,
-            swipe: false,
-            touchMove: false
-        });
-        $('.difficulty_mode').css({'visibility': 'visible'}).find('.slick-slide').animate({width: "toggle"}, 2000);
-        $('.difficulty_mode .difficulty.slick-slide').css('line-height', $('.difficulty_mode').height() + 'px');
+        if(!$('.difficulty_mode').hasClass('slick-initialized')) {
+            $('.difficulty_mode').slick({
+                centerMode: true,
+                centerPadding: '60px',
+                slidesToShow: 3,
+                arrows: false,
+                draggable: false,
+                swipe: false,
+                touchMove: false
+            });
+            $('.difficulty_mode').css({'visibility': 'visible'}).find('.slick-slide').animate({width: "toggle"}, 2000);
+            $('.difficulty_mode .difficulty.slick-slide').css('line-height', $('.difficulty_mode').height() + 'px');
+        }
 
         // Default difficulty mode
         difficultyMode = 'easy';
